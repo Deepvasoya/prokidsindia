@@ -12,6 +12,33 @@
     }
 ?>
     <div class="sectionHolder edu_admin_right edu_dashboard_wrap">
+        <?php
+            $pkHour  = (int) date('G');
+            $pkHello = $pkHour < 12 ? 'Good Morning' : ($pkHour < 17 ? 'Good Afternoon' : 'Good Evening');
+            $pkName  = $this->session->userdata('name') ?: 'Admin';
+            $pkCount = isset($dashboard_count) && is_array($dashboard_count) ? $dashboard_count : array();
+        ?>
+        <div class="pk_welcome">
+            <div class="pk_welcome_text">
+                <span class="pk_welcome_date"><?php echo date('l, d F Y'); ?></span>
+                <h2><?php echo html_escape($pkHello); ?>, <?php echo html_escape(ucwords($pkName)); ?> <span class="pk_wave">&#128075;</span></h2>
+                <p>Here is what is happening in your classes today.</p>
+            </div>
+            <div class="pk_welcome_stats">
+                <div class="pk_chip pk_chip_blue">
+                    <strong><?php echo html_escape(isset($pkCount['total_student']) ? $pkCount['total_student'] : 0); ?></strong>
+                    <span>Students</span>
+                </div>
+                <div class="pk_chip pk_chip_orange">
+                    <strong><?php echo html_escape(isset($pkCount['active_batch']) ? $pkCount['active_batch'] : 0); ?></strong>
+                    <span>Active Batches</span>
+                </div>
+                <div class="pk_chip pk_chip_green">
+                    <strong><?php echo html_escape(isset($pkCount['total_present']) ? $pkCount['total_present'] : 0); ?></strong>
+                    <span>Present Today</span>
+                </div>
+            </div>
+        </div>
          <div class="sectionHolder dasboard_links">
             <div class="edu_admin_informationdiv">
                 <h4 class="edu_title"><?php echo html_escape($this->common->languageTranslator('ltr_choose_want_anage')); ?></h4>
