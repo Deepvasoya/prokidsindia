@@ -1216,3 +1216,222 @@ a.edu_admin_bar.edu_admin_with_img img { width: 40px; height: 40px; margin-right
 }
 .edu_notifications svg { fill: var(--pk-primary); }
 .edu_notifications .notification_count { box-shadow: 0 0 0 2px #fff; }
+
+/* ==========================================================================
+   Login / Register / Forgot password / Batch register – v2
+   ========================================================================== */
+body.login-container {
+    position: relative;
+    overflow-x: hidden;
+    background:
+        radial-gradient(circle at 12% 18%, #ffd6e4 0 70px, transparent 71px),
+        radial-gradient(circle at 88% 12%, #d9f3ff 0 90px, transparent 91px),
+        radial-gradient(circle at 92% 82%, #fff0c7 0 80px, transparent 81px),
+        radial-gradient(circle at 6% 86%, #dcf7ec 0 100px, transparent 101px),
+        linear-gradient(160deg, #f4f2ff 0%, #fdf6ff 50%, #f2f8ff 100%);
+    background-attachment: fixed;
+}
+/* confetti dots */
+body.login-container::before {
+    content: "";
+    display: block !important;
+    position: fixed;
+    inset: 0;
+    max-height: none;
+    background-image:
+        radial-gradient(circle, #5b6cff 2px, transparent 3px),
+        radial-gradient(circle, #ff8a3d 2px, transparent 3px),
+        radial-gradient(circle, #22c58b 2px, transparent 3px);
+    background-size: 140px 140px, 190px 190px, 230px 230px;
+    background-position: 0 0, 60px 90px, 120px 30px;
+    opacity: .18;
+    pointer-events: none;
+    z-index: 0;
+}
+body.login-container > * { position: relative; z-index: 1; }
+
+.login-inner-section {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 34px 34px 38px;
+    border: 0;
+    border-radius: 30px;
+    background: rgba(255, 255, 255, .92);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 30px 70px rgba(91, 108, 255, .16), 0 2px 6px rgba(31, 42, 77, .04);
+}
+.login-inner-section .tp-logo-block img,
+.login-inner-section .logo-size,
+.login-inner-section .col-md-12 img.img-fluid {
+    max-height: 110px;
+    width: auto;
+    transition: transform .3s ease;
+}
+.login-inner-section .tp-logo-block:hover img { transform: scale(1.05) rotate(-2deg); }
+
+/* Left illustration panel */
+.login-form-1 {
+    position: relative;
+    overflow: hidden;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    min-height: 440px;
+    padding: 36px 5% !important;
+    border-radius: 24px;
+    background: linear-gradient(145deg, #5b6cff 0%, #8f7bff 55%, #ff8fb1 100%) !important;
+}
+@media (max-width: 767px) { .login-form-1.d-none { display: none !important; } }
+.login-form-1:before,
+.login-form-1:after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .16);
+    animation: pk-float 7s ease-in-out infinite;
+}
+.login-form-1:before { width: 180px; height: 180px; top: -50px; left: -40px; }
+.login-form-1:after { width: 120px; height: 120px; bottom: -30px; right: -20px; animation-delay: -3s; }
+.login-form-1 .let-img {
+    position: relative;
+    z-index: 1;
+    max-width: 400px;
+    padding: 18px;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, .9);
+    box-shadow: 0 18px 40px rgba(31, 42, 77, .18);
+    animation: pk-float 6s ease-in-out infinite;
+}
+@keyframes pk-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Right form */
+.right-form { display: flex; flex-direction: column; justify-content: center; padding-left: 28px; }
+.right-form form { padding-top: 10px !important; }
+.form-title {
+    font-size: 34px;
+    color: var(--pk-ink);
+    margin-bottom: 26px;
+}
+.form-title span {
+    margin-top: 6px;
+    font-family: var(--pk-font);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--pk-muted);
+}
+.form-title:after {
+    content: "";
+    display: block;
+    width: 54px;
+    height: 5px;
+    margin-top: 12px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--pk-orange), var(--pk-pink));
+}
+
+/* Inputs with icons */
+.right-form .form-group { margin-bottom: 16px; }
+.right-form .form-control,
+.right-form input[type="text"],
+.right-form input[type="email"],
+.right-form input[type="password"],
+.right-form select {
+    height: 52px !important;
+    padding-left: 48px !important;
+    border: 2px solid #eceefa !important;
+    border-radius: 16px !important;
+    background-color: #f7f8fe !important;
+    background-repeat: no-repeat !important;
+    background-position: 16px center !important;
+    background-size: 20px 20px !important;
+    font-weight: 600;
+    transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+.right-form input:focus,
+.right-form select:focus,
+.right-form .form-control:focus {
+    background-color: #fff !important;
+    border-color: var(--pk-primary) !important;
+    box-shadow: var(--pk-ring) !important;
+}
+.right-form input[name="email"] { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237a84a3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='14' rx='3'/%3E%3Cpath d='m3 7 9 6 9-6'/%3E%3C/svg%3E"); }
+.right-form input[type="password"] { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237a84a3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='11' width='16' height='10' rx='3'/%3E%3Cpath d='M8 11V7a4 4 0 0 1 8 0v4'/%3E%3C/svg%3E"); }
+.right-form input[name="name"] { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237a84a3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 21a8 8 0 0 1 16 0'/%3E%3C/svg%3E"); }
+.right-form input[name="mobile"] { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237a84a3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='7' y='2' width='10' height='20' rx='2.5'/%3E%3Cpath d='M11 18h2'/%3E%3C/svg%3E"); }
+.right-form input[name="student_city"] { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237a84a3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z'/%3E%3Ccircle cx='12' cy='9' r='2.5'/%3E%3C/svg%3E"); }
+.right-form select { padding-left: 16px !important; }
+
+/* Remember me */
+.right-form .loginLinks { display: flex; align-items: center; gap: 8px; }
+.right-form .loginLinks input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--pk-primary); }
+.right-form .loginLinks label { margin: 0; color: var(--pk-text); font-weight: 600; cursor: pointer; }
+
+/* Main button: full width, gradient, little arrow */
+.right-form .btnSubmit,
+.right-form .enrollNowSubmit {
+    width: 100%;
+    height: 54px;
+    margin-top: 10px;
+    border: 0 !important;
+    border-radius: 16px !important;
+    background: linear-gradient(120deg, #5b6cff 0%, #8f7bff 60%, #ff8fb1 130%) !important;
+    background-size: 160% 100% !important;
+    color: #fff !important;
+    font-family: var(--pk-font-head);
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: .03em;
+    box-shadow: 0 12px 26px rgba(91, 108, 255, .32);
+    transition: background-position .4s ease, transform .15s ease, box-shadow .15s ease;
+}
+.right-form .btnSubmit:after,
+.right-form .enrollNowSubmit:after { content: "  \2192"; transition: margin .2s ease; }
+.right-form .btnSubmit:hover,
+.right-form .enrollNowSubmit:hover {
+    background-position: 100% 0 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 16px 32px rgba(91, 108, 255, .38);
+}
+.right-form .btnSubmit:active { transform: translateY(0); }
+.right-form .forgot_submit_btn { width: 100%; }
+
+.text-continue { margin-top: 18px; text-align: center; color: var(--pk-muted); font-weight: 600; }
+.text-continue a,
+.right-form a.form_link_forget { color: var(--pk-primary) !important; font-weight: 800; text-decoration: none !important; }
+.text-continue a:hover { text-decoration: underline !important; }
+
+@media (max-width: 767px) {
+    body.login-container { padding: 14px 0; }
+    .login-inner-section { padding: 22px 18px 26px; border-radius: 24px; }
+    .login-inner-section .tp-logo-block img,
+    .login-inner-section .logo-size,
+    .login-inner-section .col-md-12 img.img-fluid { max-height: 84px; }
+    .right-form { padding-left: 15px; }
+    .form-title { font-size: 27px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .login-form-1 .let-img, .login-form-1:before, .login-form-1:after { animation: none; }
+}
+
+/* Auth page tweaks */
+.right-form a.btnSubmit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff !important;
+    color: var(--pk-primary) !important;
+    border: 2px solid var(--pk-primary-100) !important;
+    box-shadow: none;
+    text-decoration: none !important;
+}
+.right-form a.btnSubmit:after { content: none; }
+.right-form a.btnSubmit:hover { background: var(--pk-primary-50) !important; border-color: var(--pk-primary) !important; box-shadow: none; }
+.right-form .loginLinks { margin-left: 0; padding-left: 0; }
+@media (max-width: 767px) {
+    .right-form .form-title { font-size: 28px !important; margin-top: 8px !important; }
+    .right-form .form-title span { font-size: 15px !important; }
+}
