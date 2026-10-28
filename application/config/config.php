@@ -24,7 +24,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |
 */
 // $config['base_url'] = 'https://newapp.mcxcommodityuniversity.com';
-$config['base_url'] = 'https://app.prokidsindia.com/';
+$config['base_url'] = getenv('APP_URL');
 /*
 |--------------------------------------------------------------------------
 | Index File
@@ -314,7 +314,7 @@ $config['cache_query_string'] = FALSE;
 | https://codeigniter.com/user_guide/libraries/encryption.html
 |
 */
-$config['encryption_key'] = 'vivek.tiwari[at]himanshusofttech.com';
+$config['encryption_key'] = getenv('ENCRYPTION_KEY');
 
 /*
 |--------------------------------------------------------------------------
