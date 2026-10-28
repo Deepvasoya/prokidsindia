@@ -1,0 +1,13 @@
+# Large uploaded videos
+/uploads/video/
+
+# Runtime cache
+/system/cache/
+
+# Log files
+*.log
+
+# Secrets
+.env
+.env.*
+!.env.example

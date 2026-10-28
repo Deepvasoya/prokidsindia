@@ -1,0 +1,33 @@
+
+body.login-container{background: #0062cc;}
+.form-title{margin-bottom: 30px;font-size: 25px;
+    text-transform: uppercase;font-weight: 700;}
+    .form-title span{display: block; font-size: 17px;  color: #939292;
+        font-weight: 500; text-transform: math-auto;  margin-top: 5px;}    
+.right-form .form-control{padding: 0.5rem 0.75rem;border-radius: 0;font-size: 15px;}
+.login-inner-section{box-shadow: 0 5px 8px 0 rgba(0, 0, 0, 0.2), 0 9px 26px 0 rgba(0, 0, 0, 0.19);    background: #fff;
+    position: relative; padding: 30px;}
+.let-img{ max-width: 460px; width: 100%;}
+.logo-size{max-width: 196px; width: 100%;}
+.right-form form{padding-top: 90px;}    
+.btnSubmit{border-radius: 50px; border: none; cursor: pointer;
+    margin-top: 20px;  padding: 10px 25px; font-size: 17px;
+    font-weight: 500;background: #0062cc; color: #fff !important;  text-transform: uppercase; border: none;
+    display: inline-block; text-align: center;}
+body.login-container::before{content: ''; background: #efefef; width: 100%;  max-height: 415px; display: block;
+        position: absolute;top: 0;  height: 100%;}
+.login-container{ margin-top: 5%; margin-bottom: 5%;}
+.login-form-1{padding: 0 6%;}
+.login-form-1 h3{text-align: center;color: #333;}
+.text-continue{font-size: 16px;font-weight: 400; color: #7e7e7e;}
+    .text-continue a{font-weight: 500; text-decoration: underline;}
+        .text-continue a:hover{text-decoration: none;}        
+.login-form-1 .btnSubmit{font-weight: 600;color: #fff; background-color: #0062cc;}
+.form_link_forget, .form_link_forget:hover {
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: uppercase;
+    display: inline-block;
+    color: #007bff;
+}
+
