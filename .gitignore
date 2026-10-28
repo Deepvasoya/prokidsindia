@@ -1,5 +1,6 @@
 # Large uploaded videos
-/uploads/video/
+/uploads/video/*
+!/uploads/video/.gitkeep
 
 # Runtime cache
 /system/cache/

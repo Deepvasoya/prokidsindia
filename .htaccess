@@ -43,6 +43,14 @@ IndexIgnore *
    php_flag zlib.output_compression On
 </IfModule>
 # END cPanel-generated php ini directives, do not edit
+# Same limits for Apache mod_php (local dev); cPanel blocks above use php8_module/lsapi
+<IfModule php_module>
+   php_value max_execution_time 3000
+   php_value max_input_time 3000
+   php_value memory_limit 320M
+   php_value post_max_size 1024M
+   php_value upload_max_filesize 2048M
+</IfModule>
 
 # Video/CORS support for Android TV & Google Review devices
 <IfModule mod_headers.c>
