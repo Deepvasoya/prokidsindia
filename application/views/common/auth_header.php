@@ -11,6 +11,9 @@
     <link rel="stylesheet" type="text/css" href="<?php echo base_url();?>assets/css/font.css"/>
     <link rel="stylesheet" type="text/css" href="<?php echo base_url().'assets/css/frontend-style.css?'.time();?>"/>
     <link rel="stylesheet" type="text/css" href="<?php echo base_url();?>assets/css/login-style.css?<?php echo time();?>">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" type="text/css" href="<?php echo base_url().'assets/css/theme.css?v='.filemtime(FCPATH.'assets/css/theme.css');?>"/>
     <!------ Include the above in your HEAD tag ---------->
     <link rel="shortcut icon" type="image/x-icon" href="<?php echo base_url();?>assets/images/favicon.png" />
 	<script>
