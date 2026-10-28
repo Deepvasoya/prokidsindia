@@ -979,3 +979,49 @@ body.login-container::before { display: none; }
     .edu_popup_container { padding: 28px 16px 20px; max-width: calc(100vw - 20px); }
     .edu_sub_title { font-size: 17px !important; }
 }
+
+/* ==========================================================================
+   Video / media viewer popups (#view_video_popup on many pages)
+   ========================================================================== */
+#view_video_popup.edu_popup_container {
+    max-width: min(960px, calc(100vw - 40px)) !important;
+    padding: 24px 24px 20px !important;
+}
+#view_video_popup .edu_sub_title { margin-bottom: 18px; }
+#view_video_popup .video-container { position: relative; }
+#view_video_popup .videoIframeShow {
+    display: block;
+    margin: 0;
+    width: 100%;
+    height: auto;
+    border-radius: var(--pk-radius);
+    overflow: hidden;
+    background: #0f172a;
+}
+#view_video_popup .videoIframeShow > [class*="col"] { max-width: 100%; flex: 0 0 100%; padding: 0; }
+#view_video_popup .videoIframeShow #player,
+#view_video_popup .videoIframeShow .plyr,
+#view_video_popup .videoIframeShow .plyr__video-embed {
+    width: 100% !important;
+    max-width: 100%;
+    border-radius: var(--pk-radius);
+}
+#view_video_popup .videoIframeShow video,
+#view_video_popup .videoIframeShow iframe {
+    display: block;
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 16 / 9;
+    max-height: calc(100vh - 220px);
+    background: #000;
+    border: 0;
+}
+#view_video_popup .videoIframeShow img { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+#view_video_popup .videoIframeShow audio { width: 100%; margin: 24px 0; }
+#view_video_popup .videoIframeShow > span {
+    display: block;
+    padding: 12px 4px 0;
+    color: var(--pk-text);
+    background: #fff;
+}
+#view_video_popup .plyr--video { --plyr-color-main: var(--pk-primary); }
