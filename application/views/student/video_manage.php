@@ -584,15 +584,134 @@ display: inline-block;
 
 
 
+<style>
+/* ===== Student video lecture page – friendly redesign (scoped by section id) ===== */
+#subject-section, #topics-section, #titles-section { padding: 106px 15px 40px; }
+#subject-section .back-btn-p,
+#topics-section .back-btn,
+#titles-section .back-btn {
+    align-self: flex-start; padding: 9px 20px; border: 0; border-radius: 999px;
+    background: #fff; color: #5b6cff !important; font-size: 15px; font-weight: 800;
+    box-shadow: 0 6px 16px rgba(31,42,77,.10); text-decoration: none !important; transform: none;
+}
+#subject-section .back-btn-p:hover,
+#topics-section .back-btn:hover,
+#titles-section .back-btn:hover { background: #eef0ff; transform: translateX(-3px); }
+#subject-section > div:first-child,
+#topics-section .list-container > div:first-child,
+#titles-section .list-container > div:first-child { justify-content: flex-start !important; margin: 0 !important; }
+
+.vl-head {
+    position: relative; overflow: hidden; margin: 18px 0 26px; padding: 26px 30px; border-radius: 24px; color: #fff;
+    background: linear-gradient(120deg, #5b6cff 0%, #8f7bff 55%, #ff8fb1 100%); box-shadow: 0 14px 34px rgba(91,108,255,.25);
+}
+.vl-head:after { content: ""; position: absolute; width: 200px; height: 200px; border-radius: 50%; right: -50px; top: -80px; background: rgba(255,255,255,.14); }
+.vl-head h2 { text-transform: none; color: #fff; font-size: 28px; font-weight: 600; margin: 6px 0 4px; position: relative; z-index: 1; }
+.vl-head p { margin: 0; padding: 0; opacity: .92; font-size: 15px; position: relative; z-index: 1; }
+.vl-course { display: inline-block; padding: 5px 14px; border-radius: 999px; background: rgba(255,255,255,.2); font-size: 13px; font-weight: 800; position: relative; z-index: 1; }
+.vl-head-sm { margin-top: 0; padding: 20px 26px; }
+.vl-head-sm h2 { font-size: 24px; margin-top: 0; }
+/* the old plain course-name link above the list is replaced by the banner */
+#topics-section .list-container > div:nth-child(2),
+#titles-section .list-container > div:nth-child(2) { display: none; }
+
+/* Units grid */
+#subject-section .pcontainer {
+    max-width: none; padding: 0; margin: 0;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 22px;
+}
+#subject-section .pcontainer > a { text-decoration: none !important; --c: #5b6cff; --soft: #eef0ff; }
+#subject-section .pcontainer > a:nth-of-type(6n+1) { --c: #ff5c8a; --soft: #ffe6ee; }
+#subject-section .pcontainer > a:nth-of-type(6n+2) { --c: #ff9f1a; --soft: #fff3dc; }
+#subject-section .pcontainer > a:nth-of-type(6n+3) { --c: #22b8cf; --soft: #e2f7fb; }
+#subject-section .pcontainer > a:nth-of-type(6n+4) { --c: #7c5cff; --soft: #efeaff; }
+#subject-section .pcontainer > a:nth-of-type(6n+5) { --c: #22c58b; --soft: #dff7ee; }
+#subject-section .pcontainer > a:nth-of-type(6n+6) { --c: #5b6cff; --soft: #eef0ff; }
+#subject-section .grid-item {
+    display: flex; flex-direction: column; gap: 0; padding: 0; height: 100%; overflow: hidden;
+    background: #fff !important; border-radius: 22px; border: 2px solid transparent;
+    box-shadow: 0 8px 22px rgba(31,42,77,.07); transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+#subject-section .pcontainer > a:hover .grid-item { transform: translateY(-5px); box-shadow: 0 18px 40px rgba(31,42,77,.14); border-color: var(--c); }
+#subject-section .grid-item .image { width: 100%; height: 130px; display: flex; align-items: center; justify-content: center; background: var(--soft); padding: 14px; }
+#subject-section .grid-item .image img { width: auto; max-width: 100%; height: 100%; object-fit: contain; border-radius: 14px; transition: transform .25s ease; }
+#subject-section .pcontainer > a:hover .grid-item .image img { transform: scale(1.06) rotate(-2deg); }
+#subject-section .grid-item .content { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 16px 18px; font-family: inherit; }
+#subject-section .grid-item .content h5 { margin: 0; color: #1f2a4d !important; font-family: var(--pk-font-head, inherit); font-size: 19px; font-weight: 600; }
+#subject-section .grid-item .content:after {
+    content: "\2192"; flex: 0 0 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    background: var(--soft); color: var(--c); font-weight: 800; transition: transform .2s ease, background .2s ease, color .2s ease;
+}
+#subject-section .pcontainer > a:hover .grid-item .content:after { background: var(--c); color: #fff; transform: translateX(3px); }
+
+/* Chapters list */
+#topics-section .list-container ul {
+    padding: 0 !important; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;
+}
+#topics-section .list-container ul li {
+    position: relative; height: auto; min-height: 76px; justify-content: flex-start; text-align: left; gap: 14px;
+    padding: 18px 56px 18px 18px; border-radius: 20px; background: #fff; color: #1f2a4d;
+    font-family: var(--pk-font-head, inherit); font-size: 18px; font-weight: 600; line-height: 1.3;
+    border: 2px solid #eef0f7; box-shadow: 0 4px 12px rgba(31,42,77,.05); transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+#topics-section .list-container ul li:before {
+    content: "\25B6"; flex: 0 0 40px; height: 40px; border-radius: 14px; display: flex; align-items: center; justify-content: center;
+    background: #fff3dc; color: #ff9f1a; font-size: 14px;
+}
+#topics-section .list-container ul li:nth-child(4n+2):before { background: #e2f7fb; color: #22b8cf; }
+#topics-section .list-container ul li:nth-child(4n+3):before { background: #efeaff; color: #7c5cff; }
+#topics-section .list-container ul li:nth-child(4n+4):before { background: #ffe6ee; color: #ff5c8a; }
+#topics-section .list-container ul li:after { content: "\2192"; position: absolute; right: 18px; color: #b7bdd3; font-weight: 800; transition: transform .2s ease, color .2s ease; }
+#topics-section .list-container ul li:hover { background: #fff; transform: translateY(-3px); border-color: #8f7bff; box-shadow: 0 12px 26px rgba(31,42,77,.10); }
+#topics-section .list-container ul li:hover:after { color: #5b6cff; transform: translateX(3px); }
+
+/* Video cards */
+#titles-section .card-container { padding: 0; gap: 22px; justify-content: flex-start; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+#titles-section .video-card {
+    width: auto !important; height: auto; margin: 0; cursor: pointer; border-radius: 22px; background: #fff;
+    box-shadow: 0 8px 22px rgba(31,42,77,.07); border: 2px solid transparent; transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+#titles-section .video-card:hover { transform: translateY(-5px); box-shadow: 0 18px 40px rgba(31,42,77,.14); border-color: #ff8a3d; }
+#titles-section .video-card .thumbnail { display: block; width: 100%; aspect-ratio: 16 / 10; height: auto; object-fit: cover; background: #fff8ec; }
+#titles-section .video-card { position: relative; }
+#titles-section .video-card:before {
+    content: "\25B6"; position: absolute; top: 0; left: 0; right: 0; aspect-ratio: 16 / 10; display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 22px; background: rgba(15,23,42,0); transition: background .2s ease; pointer-events: none; z-index: 1;
+    text-shadow: 0 0 0 transparent;
+}
+#titles-section .video-card .thumbnail[src*="enkids_logo"] { object-fit: contain; padding: 16px; }
+#titles-section .video-card:hover:before { background: rgba(15,23,42,.25); }
+#titles-section .video-info { padding: 14px 16px 16px; }
+#titles-section .video-info .title { margin: 0; text-align: left; font-family: var(--pk-font-head, inherit); font-size: 17px; font-weight: 600; color: #1f2a4d; }
+#titles-section #titles-container li { height: auto; font-size: 18px; background: #fff; color: #7a84a3; border-radius: 20px; }
+
+@media (max-width: 767px) {
+    #subject-section, #topics-section, #titles-section { padding: 92px 0 30px; }
+    .vl-head { padding: 20px; }
+    .vl-head h2 { font-size: 23px; }
+    #subject-section .pcontainer, #titles-section .card-container { grid-template-columns: 1fr 1fr; gap: 14px; }
+    #subject-section .grid-item .image { height: 96px; }
+    #subject-section .grid-item .content { padding: 12px; }
+    #subject-section .grid-item .content h5 { font-size: 15px; }
+    #subject-section .grid-item .content:after { display: none; }
+    #topics-section .list-container ul { grid-template-columns: 1fr; }
+    #titles-section .video-info .title { font-size: 14px; }
+}
+</style>
 <section class="edu_admin_content" id="subject-section">
 
    <div style="display:flex; justify-content:center; margin-top:10px;">
-  <a class="back-btn-p" href="https://app.prokidsindia.com/student/my-course">
+  <a class="back-btn-p" href="<?php echo base_url('student/my-course'); ?>">
       <i class="fa fa-chevron-left"></i> Back
   </a>
 </div>
 
     
+    <div class="vl-head">
+        <span class="vl-course">&#127890; <?php echo !empty($batch_data[0]['batch_name']) ? html_escape($batch_data[0]['batch_name']) : ''; ?></span>
+        <h2>Choose a unit <span>&#128218;</span></h2>
+        <p>Tap a unit to see its chapters.</p>
+    </div>
     <div class="pcontainer">
 
     <?php
@@ -634,7 +753,7 @@ display: inline-block;
           <a href="#" class="block-link" onclick="fetchTopics('<?= htmlspecialchars($sub['subject']) ?>'); return false;">
             <div class="grid-item">
                 <div class="image">
-                    <img src="<?php echo base_url()."".$subjectThumbnail[0]['thumbnail']; ?>" alt="Image 1">
+                    <img src="<?php echo base_url()."".$subjectThumbnail[0]['thumbnail']; ?>" alt="<?= htmlspecialchars($sub['subject']) ?>" onerror="this.onerror=null;this.src='<?php echo base_url('uploads/site_data/enkids_logo.png'); ?>'">
                 </div>
                 <div class="content">
                    <h5 style="color: white;"><?= $sub['subject']; ?></h5>
@@ -647,7 +766,7 @@ display: inline-block;
         <a href="#" class="block-link" onclick="fetchTopics('<?= htmlspecialchars($sub['subject']) ?>'); return false;">
             <div class="grid-item">
                 <div class="image">
-                    <img src="https://app.prokidsindia.com/uploads/site_data/enkids_logo.png" alt="Image 1">
+                    <img src="<?php echo base_url('uploads/site_data/enkids_logo.png'); ?>" alt="<?= htmlspecialchars($sub['subject']) ?>">
                 </div>
                 <div class="content">
                        <h5 style="color: white;"><?= $sub['subject']; ?></h5>
@@ -704,7 +823,7 @@ if ($query->num_rows() > 0) {
 ?>
 
 
- <input type="hidden" id="mediaUrl" value="<?php echo $mediaUrl; ?>">
+ <input type="hidden" id="mediaUrl" value="<?php echo isset($mediaUrl) ? $mediaUrl : ''; ?>">
 
 <?php /* ?><div id="view_video_popup" class="edu_popup_container mfp-hide">
 <div class="edu_popup_wrapper">
@@ -827,7 +946,7 @@ if ($query->num_rows() > 0) {
                 <p style="font-size:25px;"><?php echo !empty($batch_data[0]['batch_name']) ? $batch_data[0]['batch_name'] : ''; ?></p>
             </a>
         </div>
-        <h4 style="padding-top:20px;">Click Chapter:</h4>
+        <div class="vl-head vl-head-sm"><h2>Pick a chapter <span>&#128214;</span></h2><p>Each chapter has fun videos to watch.</p></div>
         <ul id="topics-container" style="padding-top:20px;"></ul>
     </div>
     
@@ -876,7 +995,7 @@ if ($query->num_rows() > 0) {
                 <p style="font-size:25px;"><?php echo !empty($batch_data[0]['batch_name']) ? $batch_data[0]['batch_name'] : ''; ?></p>
             </a>
         </div>
-        <h4 style="padding-top:20px;">Select Video:</h4>
+        <div class="vl-head vl-head-sm"><h2>Pick a video <span>&#127916;</span></h2><p>Tap a video to start watching.</p></div>
          <ul id="titles-container" style="padding-top:20px;"></ul>
          <div class="card-container" id="video-cards"></div>
     </div>
@@ -954,12 +1073,12 @@ var mediaUrl = $("#mediaUrl").val();
                     const imageBaseUrl  = base_url +""+ title.thumbnail;
 
 
-                    const newVideoCard = '<div class="video-card"  data-id='+title.id+' data-url='+title.url+' data-type='+title.video_type+' data-desc='+title.description+' ><img class="thumbnail" src="'+imageBaseUrl+'" alt="Video Thumbnail">'+
+                    const newVideoCard = '<div class="video-card"  data-id='+title.id+' data-url='+title.url+' data-type='+title.video_type+' data-desc='+title.description+' ><img class="thumbnail" src="'+imageBaseUrl+'" alt="" onerror="this.onerror=null;this.src=base_url+\'uploads/site_data/enkids_logo.png\'">'+
                     '<div class="video-info"><div class="title">' + htmlspecialchars(title.title) + '</div></div></div>';
                      // Append the new video card to the container
                      $('#video-cards').append(newVideoCard);
                 }else{
-                    const newVideoCard = '<div class="video-card" data-id='+title.id+' data-url='+title.url+' data-type='+title.video_type+' data-desc='+title.description+'><img class="thumbnail" src="../uploads/site_data/enkids_logo.png" alt="Video Thumbnail">'+
+                    const newVideoCard = '<div class="video-card" data-id='+title.id+' data-url='+title.url+' data-type='+title.video_type+' data-desc='+title.description+'><img class="thumbnail" src="'+base_url+'uploads/site_data/enkids_logo.png" alt="">'+
                     '<div class="video-info"><div class="title">' + htmlspecialchars(title.title) + '</div></div></div>';
                      // Append the new video card to the container
                      $('#video-cards').append(newVideoCard);
