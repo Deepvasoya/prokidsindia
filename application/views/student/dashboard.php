@@ -57,11 +57,68 @@
    
 </style>
 
+<style>
+.sd-hero {
+    position: relative; overflow: hidden; display: flex; align-items: center; justify-content: space-between; gap: 24px;
+    margin: 0 15px 30px; padding: 30px 34px; border-radius: 26px; color: #fff;
+    background: linear-gradient(120deg, #5b6cff 0%, #8f7bff 55%, #ff8fb1 100%);
+    box-shadow: 0 14px 34px rgba(91, 108, 255, .28);
+}
+.sd-hero:before, .sd-hero:after { content: ""; position: absolute; border-radius: 50%; background: rgba(255,255,255,.13); }
+.sd-hero:before { width: 260px; height: 260px; right: -70px; top: -110px; }
+.sd-hero:after { width: 150px; height: 150px; left: 42%; bottom: -90px; }
+.sd-hero-text { position: relative; z-index: 1; }
+.sd-hero-tag { display: inline-block; font-size: 13px; font-weight: 800; padding: 5px 14px; border-radius: 999px; background: rgba(255,255,255,.2); margin-bottom: 12px; }
+.sd-hero h2 { color: #fff; font-size: 32px; font-weight: 600; margin: 0 0 8px; }
+.sd-hero p { font-size: 16px; margin: 0 0 18px; padding: 0; opacity: .95; }
+.sd-hero p strong { font-weight: 800; }
+.sd-hero-btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; border-radius: 999px; background: #fff; color: #5b6cff !important; font-weight: 800; text-decoration: none !important; box-shadow: 0 6px 16px rgba(31,42,77,.15); transition: transform .15s ease; }
+.sd-hero-btn:hover { transform: translateY(-2px); }
+.sd-hero-art { position: relative; z-index: 1; flex: 0 0 auto; width: 170px; height: 130px; border-radius: 22px; background: rgba(255,255,255,.95); display: flex; align-items: center; justify-content: center; padding: 14px; box-shadow: 0 12px 26px rgba(31,42,77,.18); transform: rotate(3deg); animation: sd-float 6s ease-in-out infinite; }
+.sd-hero-art img { max-width: 100%; max-height: 100%; object-fit: contain; }
+@keyframes sd-float { 0%,100% { transform: rotate(3deg) translateY(0); } 50% { transform: rotate(3deg) translateY(-8px); } }
+.sd-wave { display: inline-block; animation: sd-wave 2.4s ease-in-out infinite; transform-origin: 70% 70%; }
+@keyframes sd-wave { 0%,60%,100% { transform: rotate(0); } 10%,30% { transform: rotate(16deg); } 20%,40% { transform: rotate(-8deg); } }
+
+.sd-section-title { margin: 6px 15px 16px; display: flex; align-items: center; gap: 10px; font-family: var(--pk-font-head, inherit); font-size: 21px; font-weight: 600; color: #1f2a4d; }
+.sd-section-title:before { content: ""; width: 8px; height: 22px; border-radius: 999px; background: linear-gradient(180deg, #5b6cff, #9b7bff); }
+.sd-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 22px; margin: 0 15px 34px; }
+.sd-tile {
+    position: relative; overflow: hidden; display: flex; align-items: center; gap: 22px; padding: 24px;
+    border-radius: 26px; background: #fff; text-decoration: none !important; color: #1f2a4d !important;
+    box-shadow: 0 8px 22px rgba(31,42,77,.07); border: 2px solid transparent;
+    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.sd-tile:hover { transform: translateY(-5px); box-shadow: 0 18px 40px rgba(31,42,77,.14); border-color: #ff9f1a; }
+.sd-tile-main { background: linear-gradient(135deg, #fff8ec 0%, #ffe9d6 100%); }
+.sd-tile-main:after { content: ""; position: absolute; right: -40px; bottom: -40px; width: 140px; height: 140px; border-radius: 50%; background: rgba(255, 159, 26, .14); }
+.sd-tile-art { flex: 0 0 auto; width: 96px; height: 96px; border-radius: 24px; background: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 18px rgba(255, 138, 61, .22); transition: transform .25s ease; }
+.sd-tile-art img { width: 62px; height: 62px; object-fit: contain; }
+.sd-tile:hover .sd-tile-art { transform: rotate(-6deg) scale(1.05); }
+.sd-tile-body { position: relative; z-index: 1; }
+.sd-tile-body h3 { font-size: 23px; font-weight: 600; margin: 0 0 6px; color: #1f2a4d; }
+.sd-tile-body p { margin: 0 0 14px; padding: 0; color: #7a84a3; font-size: 14.5px; font-weight: 600; }
+.sd-tile-btn { display: inline-flex; align-items: center; gap: 8px; padding: 9px 18px; border-radius: 999px; background: linear-gradient(120deg, #ff8a3d, #ff5c8a); color: #fff; font-weight: 800; box-shadow: 0 6px 14px rgba(255, 92, 138, .3); }
+.sd-arrow { transition: transform .2s ease; }
+.sd-tile:hover .sd-arrow { transform: translateX(4px); }
+
+@media (max-width: 767px) {
+    .sd-hero { margin: 0 0 22px; padding: 22px 20px; flex-direction: column; align-items: flex-start; }
+    .sd-hero h2 { font-size: 25px; }
+    .sd-hero-art { width: 120px; height: 92px; align-self: flex-end; margin-top: -10px; }
+    .sd-tiles { grid-template-columns: 1fr; margin: 0 0 24px; }
+    .sd-section-title { margin: 0 0 14px; }
+    .sd-tile { padding: 18px; gap: 16px; }
+    .sd-tile-art { width: 76px; height: 76px; }
+    .sd-tile-art img { width: 48px; height: 48px; }
+}
+@media (prefers-reduced-motion: reduce) { .sd-wave, .sd-hero-art { animation: none; } }
+</style>
 <section class="edu_admin_content">
 	<div class="sectionHolder edu_admin_right edu_dashboard_wrap">
 	    	 <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
 	    	     
-	    	     <p style="font-size:25px"><?php echo $batch_data[0]['batch_name'];  ?></p>
+	    	     <?php /* course name now shown in the welcome banner below */ ?>
 
     		 <!--   	<div class="form-group">-->
 							<!--<span>-->
@@ -80,6 +137,21 @@
 						</div>
 						
 						
+						<?php
+						    $sd_name  = $this->session->userdata('name');
+						    $sd_first = $sd_name ? ucwords(strtolower(strtok(trim($sd_name), ' '))) : 'there';
+						    $sd_batch = !empty($batch_data[0]) ? $batch_data[0] : array();
+						    $sd_image = !empty($sd_batch['batch_image']) ? base_url('uploads/batch_image/' . $sd_batch['batch_image']) : html_escape($this->common->siteLogo);
+						?>
+						<div class="sd-hero">
+						    <div class="sd-hero-text">
+						        <span class="sd-hero-tag">&#127890; My Classroom</span>
+						        <h2>Hi <?php echo html_escape($sd_first); ?>! <span class="sd-wave">&#128075;</span></h2>
+						        <p>You're learning <strong><?php echo html_escape(isset($sd_batch['batch_name']) ? $sd_batch['batch_name'] : ''); ?></strong>. Let's have fun today!</p>
+						        <a class="sd-hero-btn" href="<?php echo base_url('student/my-course'); ?>">&#8644; Change course</a>
+						    </div>
+						    <div class="sd-hero-art"><img src="<?php echo $sd_image; ?>" alt="<?php echo html_escape(isset($sd_batch['batch_name']) ? $sd_batch['batch_name'] : 'Course'); ?>"></div>
+						</div>
 						<div id="student_batch_data">
 						    <div class="slider-img" style="display: block;">
 						        <!--  <div id="demo" class="carousel slide" data-ride="carousel"> -->
@@ -111,7 +183,7 @@ $homeBanner = $this->db->get()->result_array();
                               ?>
                               <div class="carousel-inner">
                                 <!--<div class="carousel-item active">-->
-                                 <!--<img src="<?php echo base_url('uploads/batch_banners/LMH.png');?><?php echo $baner['banner'];?>" alt="banner-imgone" />  -->  
+                                 <?php /* <img src="uploads/batch_banners/LMH.png" alt="banner-imgone" /> */ ?>  
                                 <!--</div> -->
                                    <?php  $i=1;
                                    foreach($homeBanner as $baner){ 
@@ -235,20 +307,16 @@ $homeBanner = $this->db->get()->result_array();
             <!--    </div>-->
             <!--     </a>-->
             <!--</div>-->
-           <div class="col-12 mb-4 d-flex justify-content-center">
-                <div class="col-4 mb-4">
-                    <a href="<?php echo base_url()?>student/video-lecture1" class="block-link">
-                        <div class="block" style="background-color: #0f4d92 !important;">
-                            <div class="block-icon">
-                                <img src="../assets/images/video-lecture.png" alt="Announcement Icon" class="icon-image"> 
-                            </div>
-                            <div class="block-name">
-                                <h3 class="mb-0">Course Content</h3>
-                            </div>
-                            <button class="arrow-btn"><i class="fas fa-chevron-right"></i></button>
-                        </div>
-                    </a>
-                </div>
+           <div class="sd-section-title">What would you like to do?</div>
+           <div class="sd-tiles">
+                <a href="<?php echo base_url()?>student/video-lecture1" class="sd-tile sd-tile-main">
+                    <div class="sd-tile-art"><img src="<?php echo base_url('assets/images/video-lecture.png'); ?>" alt=""></div>
+                    <div class="sd-tile-body">
+                        <h3>Course Content</h3>
+                        <p>Watch fun videos, learn step by step and answer questions.</p>
+                        <span class="sd-tile-btn">Let's go <span class="sd-arrow">&rarr;</span></span>
+                    </div>
+                </a>
             </div>
 
              <!--<div class="col-md-4 mb-4">
