@@ -1166,7 +1166,8 @@ function addBlog() {
                 // echo $this->db->last_query();
     
                 if(($this->session->userdata('role')==3) && empty($this->session->userdata('batch_id'))){
-                    $student_data = "";
+                    $student_dat = array();
+                    $new = array();
                 }
                 if(!empty($student_dat)){
                     $role = $this->session->userdata('role');
@@ -1176,7 +1177,6 @@ function addBlog() {
                         $profile = 'teacher';
                     }
      
-                    $batch_array = $this->db_model->select_data('id,batch_name','batches use index (id)',array('id'=>$student_data[0]['batch_id']));
                     
                     foreach($new as $student){
                        
@@ -1186,10 +1186,8 @@ function addBlog() {
                             $image = '<img src="'.base_url().'assets/images/student_img.png" title="'.$student['name'].'" class="view_large_image"></a>';
                         }
         
-                        foreach($new as $studentData){
-                          $join = array('batches',"batches.id = sudent_batchs.batch_id");
-                          $student_batch = $this->db_model->select_data('sudent_batchs.id,sudent_batchs.student_id,sudent_batchs.batch_id,batches.batch_name','sudent_batchs',array('student_id'=>$student['s_id']),'','','',$join,'batches.id');
-                        }
+                        $join = array('batches',"batches.id = sudent_batchs.batch_id");
+                        $student_batch = $this->db_model->select_data('sudent_batchs.id,sudent_batchs.student_id,sudent_batchs.batch_id,batches.batch_name','sudent_batchs',array('student_id'=>$student['s_id']),'','','',$join,'batches.id');
     
                           $batch_name="";
                          
