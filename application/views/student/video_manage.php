@@ -587,22 +587,23 @@ display: inline-block;
 <style>
 /* ===== Student video lecture page – friendly redesign (scoped by section id) ===== */
 #subject-section, #topics-section, #titles-section { padding: 106px 15px 40px; }
+#topics-section .list-container, #titles-section .list-container { margin-top: 0; }
 #subject-section .back-btn-p,
 #topics-section .back-btn,
 #titles-section .back-btn {
-    align-self: flex-start; padding: 9px 20px; border: 0; border-radius: 999px;
+    display: inline-flex; align-items: center; gap: 8px; padding: 10px 24px; border: 0; border-radius: 999px;
     background: #fff; color: #5b6cff !important; font-size: 15px; font-weight: 800;
     box-shadow: 0 6px 16px rgba(31,42,77,.10); text-decoration: none !important; transform: none;
 }
 #subject-section .back-btn-p:hover,
 #topics-section .back-btn:hover,
-#titles-section .back-btn:hover { background: #eef0ff; transform: translateX(-3px); }
+#titles-section .back-btn:hover { background: #eef0ff; transform: translateY(-2px); }
 #subject-section > div:first-child,
 #topics-section .list-container > div:first-child,
-#titles-section .list-container > div:first-child { justify-content: flex-start !important; margin: 0 !important; }
+#titles-section .list-container > div:first-child { justify-content: center !important; margin: 0 0 20px !important; }
 
 .vl-head {
-    position: relative; overflow: hidden; margin: 18px 0 26px; padding: 26px 30px; border-radius: 24px; color: #fff;
+    position: relative; overflow: hidden; margin: 0 0 26px; padding: 26px 30px; border-radius: 24px; color: #fff;
     background: linear-gradient(120deg, #5b6cff 0%, #8f7bff 55%, #ff8fb1 100%); box-shadow: 0 14px 34px rgba(91,108,255,.25);
 }
 .vl-head:after { content: ""; position: absolute; width: 200px; height: 200px; border-radius: 50%; right: -50px; top: -80px; background: rgba(255,255,255,.14); }
