@@ -1618,3 +1618,11 @@ body.login-container > section { position: relative; z-index: 1; }
 }
 .notification-wrapper .header-icon { height: auto !important; }
 .notification-wrapper .header-icon svg { margin: 0 !important; }
+
+/* Student panel has no sidebar (it is display:none), so don't reserve room for it */
+body.student-panel .edu_admin_content,
+body.student-panel.edu_header_closed .edu_admin_content { padding-left: 0 !important; }
+body.student-panel .edu_top_header,
+body.student-panel.edu_header_closed .edu_top_header { margin-left: 0 !important; }
+body.student-panel .edu_admin_footer { left: 0 !important; }
+body.student-panel .edu_top_header .edu_header_close { display: none; }
