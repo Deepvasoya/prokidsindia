@@ -313,7 +313,7 @@
 
 	</style>
 </head>
-<body class="<?php if($this->common->language_name=='arabic'){ echo 'rtl' ;}?>">
+<body class="student-panel <?php if($this->common->language_name=='arabic'){ echo 'rtl' ;}?>">
 <!----- Preloader Box ----->
 <div class="edu_preloader">
 	<div class="edu_status">

@@ -102,7 +102,42 @@
 .sd-arrow { transition: transform .2s ease; }
 .sd-tile:hover .sd-arrow { transform: translateX(4px); }
 
+.sd-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin: -6px 15px 32px; }
+.sd-stat { display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-radius: 22px; background: #fff; box-shadow: 0 8px 22px rgba(31,42,77,.07); border-bottom: 4px solid var(--c); transition: transform .2s ease; }
+.sd-stat:hover { transform: translateY(-3px); }
+.sd-stat-icon { flex: 0 0 50px; height: 50px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 26px; background: var(--soft); }
+.sd-stat strong { display: block; font-family: var(--pk-font-head, inherit); font-size: 28px; font-weight: 600; line-height: 1.1; color: var(--c); }
+.sd-stat span:not(.sd-stat-icon) { font-size: 13.5px; font-weight: 700; color: #7a84a3; }
+.sd-c-blue   { --c: #5b6cff; --soft: #eef0ff; }
+.sd-c-orange { --c: #ff8a3d; --soft: #fff3dc; }
+.sd-c-yellow { --c: #e0a100; --soft: #fff8d6; }
+.sd-c-green  { --c: #16a374; --soft: #dff7ee; }
+.sd-tile-alt { background: linear-gradient(135deg, #eef0ff 0%, #f3ecff 100%); }
+.sd-tile-alt:hover { border-color: #8f7bff; }
+.sd-tile-alt:after { content: ""; position: absolute; right: -40px; bottom: -40px; width: 140px; height: 140px; border-radius: 50%; background: rgba(91,108,255,.10); }
+.sd-tile-emoji { font-size: 50px; line-height: 1; }
+.sd-tile-btn-alt { background: linear-gradient(120deg, #5b6cff, #9b7bff); box-shadow: 0 6px 14px rgba(91,108,255,.3); }
+.sd-recent { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; margin: 0 15px 34px; }
+.sd-recent-item { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 20px; background: #fff; box-shadow: 0 4px 14px rgba(31,42,77,.06); }
+.sd-recent-icon { flex: 0 0 44px; height: 44px; border-radius: 14px; background: #fff3dc; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+.sd-recent-body { flex: 1; min-width: 0; }
+.sd-recent-body strong { display: block; font-family: var(--pk-font-head, inherit); font-size: 16px; font-weight: 600; color: #1f2a4d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sd-recent-body span { font-size: 13px; font-weight: 700; color: #7a84a3; }
+.sd-stars { white-space: nowrap; font-size: 20px; }
+.sd-star { color: #e6e8f2; }
+.sd-star.on { color: #ffc23d; }
+.sd-empty { display: flex; align-items: center; gap: 14px; margin: 0 15px 34px; padding: 18px 22px; border-radius: 20px; background: #fffbea; border: 2px dashed #ffe08a; }
+.sd-empty span { font-size: 30px; }
+.sd-empty p { margin: 0; padding: 0; color: #8a6a00; font-weight: 700; }
+
+@media (max-width: 1100px) { .sd-stats { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 767px) {
+    .sd-stats { margin: -4px 0 24px; gap: 12px; }
+    .sd-stat { padding: 12px; gap: 10px; }
+    .sd-stat-icon { flex-basis: 40px; height: 40px; font-size: 20px; }
+    .sd-stat strong { font-size: 22px; }
+    .sd-recent, .sd-empty { margin: 0 0 24px; }
+    .sd-recent { grid-template-columns: 1fr; }
     .sd-hero { margin: 0 0 22px; padding: 22px 20px; flex-direction: column; align-items: flex-start; }
     .sd-hero h2 { font-size: 25px; }
     .sd-hero-art { width: 120px; height: 92px; align-self: flex-end; margin-top: -10px; }
@@ -142,6 +177,38 @@
 						    $sd_first = $sd_name ? ucwords(strtolower(strtok(trim($sd_name), ' '))) : 'there';
 						    $sd_batch = !empty($batch_data[0]) ? $batch_data[0] : array();
 						    $sd_image = !empty($sd_batch['batch_image']) ? base_url('uploads/batch_image/' . $sd_batch['batch_image']) : html_escape($this->common->siteLogo);
+
+						    // "My learning" numbers
+						    $sd_uid     = (int) $this->session->userdata('uid');
+						    $sd_courses = $this->db->where('student_id', $sd_uid)->count_all_results('sudent_batchs');
+						    $sd_quizzes = 0; $sd_stars = 0; $sd_best = null; $sd_recent = array();
+						    if ($this->db->table_exists('video_assessment_attempts')) {
+						        $sd_attempts = $this->db->select('a.video_id, a.score, a.total_marks, a.created_at, v.title')
+						            ->from('video_assessment_attempts a')
+						            ->join('video_lectures v', 'v.id = a.video_id', 'left')
+						            ->where('a.student_id', $sd_uid)->order_by('a.id', 'desc')->get()->result_array();
+						        $sd_best_by_video = array();
+						        foreach ($sd_attempts as $at) {
+						            $pct = $at['total_marks'] > 0 ? $at['score'] / $at['total_marks'] : 0;
+						            if (!isset($sd_best_by_video[$at['video_id']]) || $pct > $sd_best_by_video[$at['video_id']]) {
+						                $sd_best_by_video[$at['video_id']] = $pct;
+						            }
+						            if (count($sd_recent) < 4 && !isset($sd_recent[$at['video_id']])) {
+						                $sd_recent[$at['video_id']] = $at + array('pct' => $pct);
+						            }
+						        }
+						        $sd_quizzes = count($sd_best_by_video);
+						        foreach ($sd_best_by_video as $pct) {
+						            $sd_stars += $pct >= 0.9 ? 3 : ($pct >= 0.6 ? 2 : ($pct > 0 ? 1 : 0));
+						        }
+						        $sd_best = $sd_best_by_video ? round(max($sd_best_by_video) * 100) : null;
+						    }
+						    $sd_star_html = function ($pct) {
+						        $n = $pct >= 0.9 ? 3 : ($pct >= 0.6 ? 2 : ($pct > 0 ? 1 : 0));
+						        $out = '';
+						        for ($i = 0; $i < 3; $i++) { $out .= '<span class="sd-star' . ($i < $n ? ' on' : '') . '">&#9733;</span>'; }
+						        return $out;
+						    };
 						?>
 						<div class="sd-hero">
 						    <div class="sd-hero-text">
@@ -151,6 +218,12 @@
 						        <a class="sd-hero-btn" href="<?php echo base_url('student/my-course'); ?>">&#8644; Change course</a>
 						    </div>
 						    <div class="sd-hero-art"><img src="<?php echo $sd_image; ?>" alt="<?php echo html_escape(isset($sd_batch['batch_name']) ? $sd_batch['batch_name'] : 'Course'); ?>"></div>
+						</div>
+						<div class="sd-stats">
+						    <div class="sd-stat sd-c-blue"><span class="sd-stat-icon">&#127890;</span><div><strong><?php echo (int) $sd_courses; ?></strong><span>My courses</span></div></div>
+						    <div class="sd-stat sd-c-orange"><span class="sd-stat-icon">&#129504;</span><div><strong><?php echo (int) $sd_quizzes; ?></strong><span>Quizzes done</span></div></div>
+						    <div class="sd-stat sd-c-yellow"><span class="sd-stat-icon">&#11088;</span><div><strong><?php echo (int) $sd_stars; ?></strong><span>Stars earned</span></div></div>
+						    <div class="sd-stat sd-c-green"><span class="sd-stat-icon">&#127942;</span><div><strong><?php echo $sd_best === null ? '&ndash;' : $sd_best . '%'; ?></strong><span>Best score</span></div></div>
 						</div>
 						<div id="student_batch_data">
 						    <div class="slider-img" style="display: block;">
@@ -317,7 +390,36 @@ $homeBanner = $this->db->get()->result_array();
                         <span class="sd-tile-btn">Let's go <span class="sd-arrow">&rarr;</span></span>
                     </div>
                 </a>
+                <a href="<?php echo base_url('student/my-course'); ?>" class="sd-tile sd-tile-alt">
+                    <div class="sd-tile-art"><span class="sd-tile-emoji">&#128218;</span></div>
+                    <div class="sd-tile-body">
+                        <h3>My Courses</h3>
+                        <p>See all your courses and switch to another one.</p>
+                        <span class="sd-tile-btn sd-tile-btn-alt">Open <span class="sd-arrow">&rarr;</span></span>
+                    </div>
+                </a>
             </div>
+
+            <div class="sd-section-title">My recent quizzes</div>
+            <?php if (!empty($sd_recent)) { ?>
+            <div class="sd-recent">
+                <?php foreach ($sd_recent as $rq) { ?>
+                <div class="sd-recent-item">
+                    <span class="sd-recent-icon">&#127916;</span>
+                    <div class="sd-recent-body">
+                        <strong><?php echo html_escape($rq['title'] ? $rq['title'] : 'Video'); ?></strong>
+                        <span><?php echo rtrim(rtrim(number_format($rq['score'], 2), '0'), '.'); ?> / <?php echo rtrim(rtrim(number_format($rq['total_marks'], 2), '0'), '.'); ?> marks &middot; <?php echo date('d M', strtotime($rq['created_at'])); ?></span>
+                    </div>
+                    <div class="sd-stars"><?php echo $sd_star_html($rq['pct']); ?></div>
+                </div>
+                <?php } ?>
+            </div>
+            <?php } else { ?>
+            <div class="sd-empty">
+                <span>&#127775;</span>
+                <p>Watch a video in <b>Course Content</b> and answer its quiz to earn your first stars!</p>
+            </div>
+            <?php } ?>
 
              <!--<div class="col-md-4 mb-4">
                   <a href="<?php echo base_url()?>student/homework1" class="block-link">
