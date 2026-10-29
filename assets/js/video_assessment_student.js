@@ -94,8 +94,12 @@
         var $o = $('#vasOverlay');
         if (!$o.length) {
             $o = $('<div id="vasOverlay" class="vas-overlay" role="dialog" aria-modal="true"><div class="vas-card"></div></div>');
-            $('body').append($o);
         }
+        // Live inside Magnific Popup's wrapper: it pulls focus back to itself whenever
+        // something outside the popup gets focus, which made the answer box untypeable.
+        var $host = $('.mfp-wrap').first();
+        if (!$host.length) { $host = $('body'); }
+        if (!$o.parent().is($host)) { $o.appendTo($host); }
         return $o;
     }
 
