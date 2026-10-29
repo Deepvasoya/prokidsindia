@@ -1435,3 +1435,54 @@ body.login-container > * { position: relative; z-index: 1; }
     .right-form .form-title { font-size: 28px !important; margin-top: 8px !important; }
     .right-form .form-title span { font-size: 15px !important; }
 }
+
+/* Video list: "Assessment" button next to the title edit button */
+a.btn_assessment {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 8px;
+    padding: 8px 14px;
+    border-radius: 12px;
+    background: linear-gradient(120deg, #ff8a3d, #ff5c8a);
+    color: #fff !important;
+    font-weight: 700;
+    font-size: 13px;
+    vertical-align: middle;
+    box-shadow: 0 4px 12px rgba(255, 92, 138, .28);
+    text-decoration: none !important;
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+a.btn_assessment:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(255, 92, 138, .35); }
+a.btn_assessment i { margin: 0; }
+a.btn_assessment .assess_count {
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: #fff;
+    color: #e11d48;
+    font-size: 12px;
+    line-height: 20px;
+    text-align: center;
+}
+a.btn_assessment .assess_count.is-empty { background: rgba(255, 255, 255, .35); color: #fff; }
+.edu_admin_informationdiv .table td a.btn_assessment,
+.table td a.btn_assessment {
+    width: auto !important;
+    height: auto !important;
+    line-height: 1.2 !important;
+    padding: 8px 14px !important;
+    margin: 0 0 0 8px !important;
+    border-radius: 12px !important;
+}
+.table td a.btn_assessment i {
+    width: auto !important;
+    height: auto !important;
+    line-height: 1 !important;
+    padding: 0 !important;
+    background: none !important;
+    color: #fff !important;
+    box-shadow: none !important;
+    font-size: 15px;
+}

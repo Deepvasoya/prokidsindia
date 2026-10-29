@@ -2,6 +2,10 @@
 /uploads/video/*
 !/uploads/video/.gitkeep
 
+# Uploaded assessment media
+/uploads/video_assessment/*
+!/uploads/video_assessment/.gitkeep
+
 # Runtime cache
 /system/cache/
 

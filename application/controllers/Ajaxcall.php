@@ -4549,6 +4549,19 @@ error_reporting(E_ALL);*/
         if (!empty($videos)) {
             $dataarray = array();
 
+            // Question count per video for the "Assessment" button badge (one query per page).
+            $assess_counts = array();
+            if ($role == 1 || $role == 3) {
+                $video_ids = array_map('intval', array_column($videos, 'id'));
+                if ($this->db->table_exists('video_assessment_questions')) {
+                    $rows = $this->db->select('video_id, COUNT(*) AS total')->where_in('video_id', $video_ids)
+                                     ->group_by('video_id')->get('video_assessment_questions')->result_array();
+                    foreach ($rows as $r) {
+                        $assess_counts[$r['video_id']] = (int) $r['total'];
+                    }
+                }
+            }
+
             foreach ($videos as $vid) {
 
                 // $inline_edit = "<a style='margin-left: 20px;' class='edit_video_url btn_edit_inline' title='Edit' 
@@ -4568,6 +4581,12 @@ error_reporting(E_ALL);*/
          <i class='fa fa-edit'></i>
     </a>
 ";
+                if ($role == 1 || $role == 3) {
+                    $assess_total = isset($assess_counts[$vid['id']]) ? $assess_counts[$vid['id']] : 0;
+                    $inline_edit .= "<a class='btn_assessment' title='Assessment (MCQ / Fill up)' href='" . base_url('admin/video-assessment/' . $vid['id']) . "'>"
+                        . "<i class='fa fa-question-circle'></i> Assessment"
+                        . "<span class='assess_count" . ($assess_total ? '' : ' is-empty') . "'>" . $assess_total . "</span></a>";
+                }
 
                 $action = "
                     <a class='viewVideo btn_view'  title='View' data-id='" . $vid["id"] . "' data-url='" . base_url($vid["url"]) . "' data-type='" . $vid["video_type"] . "' data-desc='" . $vid["description"] . "'><i class='fa fa-eye'></i></a>

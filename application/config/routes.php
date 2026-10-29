@@ -72,6 +72,7 @@ $route['admin/question-manage'] = 'admin_profile/question_manage';
 $route['admin/notice-manage'] = 'admin_profile/notice_manage';
 $route['admin/vacancy-manage'] = 'admin_profile/vacancy_manage';
 $route['admin/video-manage'] = 'admin_profile/video_manage';
+$route['admin/video-assessment/(:num)'] = 'video_assessment/index/$1';
 $route['admin/enquiry'] = 'admin_profile/enquiry';
 $route['admin/timezone'] = 'admin_profile/timezone';
 $route['admin/teacher-manage'] = 'admin_profile/teacher_manage';
