@@ -1435,3 +1435,79 @@ body.login-container > * { position: relative; z-index: 1; }
     .right-form .form-title { font-size: 28px !important; margin-top: 8px !important; }
     .right-form .form-title span { font-size: 15px !important; }
 }
+
+/* ==========================================================================
+   Row "..." action menus (student / teacher tables): open to the left
+   so they never run off the right edge of the screen
+   ========================================================================== */
+.actions_wrap_dot { display: inline-block; }
+.tbl_action_drop {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background .15s ease;
+}
+.tbl_action_drop:hover,
+.tbl_action_drop_open { background: var(--pk-primary-50); }
+.actions_wrap_dot .tbl_action_ul {
+    left: auto !important;
+    right: 0;
+    top: 44px;
+    min-width: 230px;
+    max-width: calc(100vw - 32px);
+    padding: 8px !important;
+    margin: 0;
+    list-style: none;
+    border: 1px solid var(--pk-border) !important;
+    border-radius: 16px !important;
+    box-shadow: var(--pk-shadow-lg) !important;
+    transform-origin: top right;
+    z-index: 30;
+}
+.actions_wrap_dot .tbl_action_ul:after { right: 13px; }
+.edu_admin_informationdiv .table tr:nth-last-child(-n+4) .actions_wrap_dot .tbl_action_ul { top: auto; bottom: 44px; transform-origin: bottom right; }
+.edu_admin_informationdiv .table tr:nth-child(-n+3) .actions_wrap_dot .tbl_action_ul { top: 44px; bottom: auto; transform-origin: top right; }
+.edu_admin_informationdiv .table tr:nth-last-child(-n+4) .actions_wrap_dot .tbl_action_ul:after { right: 13px; }
+.edu_admin_informationdiv .table tr:nth-child(-n+3) .actions_wrap_dot .tbl_action_ul:after { top: -6px; bottom: auto; transform: rotate(45deg); }
+.tbl_action_ul > li { padding-top: 0 !important; }
+.tbl_action_ul > li > a {
+    gap: 12px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    color: var(--pk-text) !important;
+    font-size: 14.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    text-decoration: none !important;
+}
+.tbl_action_ul > li > a:hover,
+.tbl_action_ul > li > a:focus { background: var(--pk-primary-50); color: var(--pk-primary) !important; }
+.tbl_action_ul .action_drop_icon {
+    flex: 0 0 32px;
+    width: 32px !important;
+    height: 32px !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px !important;
+    background: var(--pk-primary-50) !important;
+    color: var(--pk-primary) !important;
+}
+.tbl_action_ul .action_drop_icon i,
+.tbl_action_ul .action_drop_icon svg { margin: 0 !important; color: var(--pk-primary) !important; fill: var(--pk-primary) !important; font-size: 15px; }
+.tbl_action_ul > li:last-child > a:hover .action_drop_icon,
+.tbl_action_ul > li > a.deleteData:hover .action_drop_icon { background: #ffe6ee !important; }
+.tbl_action_ul .action_drop_icon i {
+    width: auto !important;
+    height: auto !important;
+    line-height: 1 !important;
+    padding: 0 !important;
+    background: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
