@@ -1514,3 +1514,107 @@ body.login-container > section { position: relative; z-index: 1; }
     border-radius: 0 !important;
     box-shadow: none !important;
 }
+
+/* Student top bar: "My Course" button, empty live-class slot, no underlines */
+.edu_top_header a,
+.edu_top_header a:hover,
+.edu_admin_bar,
+.edu_admin_bar:hover { text-decoration: none !important; }
+#onlineClassBtn,
+.edu_top_header a.edu_admin_bar:has(> .edu_admin_btn) {
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    min-width: 0;
+}
+.edu_top_header a.edu_admin_bar > .edu_admin_btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 42px;
+    line-height: 1;
+    padding: 0 20px;
+    border-radius: 999px;
+    font-size: 14px;
+    letter-spacing: .02em;
+}
+.edu_top_header .edu_admin_btn i {
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: none !important;
+    color: #fff !important;
+}
+@media (max-width: 767px) {
+    /* "My Course" shrinks to a round icon so the top bar fits on one line */
+    .edu_top_header a.edu_admin_bar > .edu_admin_btn { width: 42px; padding: 0; justify-content: center; font-size: 0; gap: 0; }
+    .edu_top_header a.edu_admin_bar > .edu_admin_btn i { font-size: 16px; }
+    .edu_top_header .edu_page_title.mr-3 { margin-right: 6px !important; }
+    .edu_top_header a.edu_admin_bar.mr-3 { margin-right: 0 !important; }
+}
+@media (max-width: 767px) {
+    .edu_top_header a.edu_admin_bar > .edu_admin_btn { width: 42px !important; min-width: 0 !important; }
+    /* Profile button: avatar only (name hidden) to save space */
+    .edu_top_header a.edu_admin_bar.edu_admin_with_img { font-size: 0 !important; padding: 3px !important; margin-top: 0 !important; }
+    .edu_top_header a.edu_admin_bar.edu_admin_with_img > span,
+    .edu_top_header a.edu_admin_bar.edu_admin_with_img > img { margin-right: 0 !important; font-size: 18px; }
+    .edu_top_header a.edu_admin_bar.edu_admin_with_img > i,
+    .edu_top_header a.edu_admin_bar.edu_admin_with_img > svg { display: none; }
+    .edu_top_header .btna { align-items: center; }
+}
+@media (max-width: 767px) {
+    /* Keep the student top bar on a single row */
+    .edu_top_header { flex-wrap: nowrap !important; gap: 8px; }
+    .edu_top_header .edu_header_left { flex: 1 1 auto; width: auto !important; min-width: 0; }
+    .edu_top_header .edu_header_left .edu_header_close { margin-right: 10px; flex-shrink: 0; }
+    .edu_top_header .edu_header_left .edu_page_title { min-width: 0; }
+    .edu_top_header .edu_header_left .edu_page_title p { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 17px; }
+    .edu_top_header .edu_admin_header_info { flex: 0 0 auto; width: auto !important; flex-wrap: nowrap !important; align-items: center; gap: 6px; }
+    .edu_top_header .btna,
+    .edu_top_header .btnb { align-items: center; height: auto !important; margin: 0 !important; }
+    .edu_top_header .notification-wrapper,
+    .edu_top_header .notification-info,
+    .edu_top_header .edu_admin { height: auto !important; margin: 0 !important; padding: 0 !important; display: flex; align-items: center; }
+}
+@media (max-width: 767px) {
+    .edu_top_header {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        max-height: 72px !important;
+        padding: 12px 14px !important;
+    }
+}
+
+/* Student notification bell as a round tile */
+.notification-wrapper .notification-info {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px !important;
+    border-radius: 14px;
+    background: var(--pk-primary-50);
+    transition: background .15s ease;
+}
+.notification-wrapper .notification-info:hover { background: var(--pk-primary-100); }
+.notification-wrapper .header-icon { display: flex; align-items: center; justify-content: center; }
+.notification-wrapper .header-icon svg { width: 20px; height: 20px; fill: var(--pk-primary); }
+.notification-wrapper .header-icon span {
+    top: -12px;
+    right: -12px;
+    min-width: 18px;
+    width: auto;
+    height: 18px;
+    padding: 0 4px;
+    line-height: 18px;
+    border-radius: 999px;
+    background: var(--pk-danger);
+    box-shadow: 0 0 0 2px #fff;
+    font-weight: 800;
+}
+.notification-wrapper .header-icon { height: auto !important; }
+.notification-wrapper .header-icon svg { margin: 0 !important; }
