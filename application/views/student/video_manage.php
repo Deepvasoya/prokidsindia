@@ -1008,6 +1008,8 @@ if ($query->num_rows() > 0) {
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.plyr.io/3.7.2/plyr.polyfilled.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+<link rel="stylesheet" href="<?php echo base_url('assets/css/video_assessment_student.css?v=' . filemtime(FCPATH . 'assets/css/video_assessment_student.css')); ?>">
+<script src="<?php echo base_url('assets/js/video_assessment_student.js?v=' . filemtime(FCPATH . 'assets/js/video_assessment_student.js')); ?>"></script>
 
 
 <script>
@@ -1271,8 +1273,10 @@ $.magnificPopup.open({
             if (videoType === 'youtube') {
                 window.playerx = new Plyr('#player');
             }
+            if (window.VAS) { VAS.start(videoId); } // quiz questions for this video
         },
         close: function() {
+            if (window.VAS) { VAS.stop(); }
             // Cleanup on close
             $('#view_video_popup .videoIframeShow').html('');
             if (window.playerx) {

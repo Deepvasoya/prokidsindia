@@ -23,3 +23,18 @@ CREATE TABLE IF NOT EXISTS `video_assessment_questions` (
   PRIMARY KEY (`id`),
   KEY `idx_video` (`video_id`, `status`, `sort_order`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- One row per finished attempt by a student.
+CREATE TABLE IF NOT EXISTS `video_assessment_attempts` (
+  `id`             INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `video_id`       INT NOT NULL,
+  `student_id`     INT NOT NULL,
+  `score`          DECIMAL(8,2) NOT NULL DEFAULT 0,
+  `total_marks`    DECIMAL(8,2) NOT NULL DEFAULT 0,
+  `correct_count`  INT NOT NULL DEFAULT 0,
+  `question_count` INT NOT NULL DEFAULT 0,
+  `answers`        TEXT NULL COMMENT 'JSON {question_id: {"answer":..,"correct":0|1}}',
+  `created_at`     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_student_video` (`student_id`, `video_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

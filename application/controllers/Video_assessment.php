@@ -356,7 +356,7 @@ class Video_assessment extends CI_Controller {
             @mkdir(FCPATH . self::UPLOAD_DIR, 0775, TRUE);
         }
         $name = $kind . '_' . date('Ymd_His') . '_' . bin2hex(random_bytes(6)) . '.' . $ext;
-        if (!move_uploaded_file($file['tmp_name'], FCPATH . self::UPLOAD_DIR . $name)) {
+        if (!@move_uploaded_file($file['tmp_name'], FCPATH . self::UPLOAD_DIR . $name)) {
             return array('error' => 'Could not save the file on the server.');
         }
         return array('path' => self::UPLOAD_DIR . $name);
