@@ -25,6 +25,20 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 */
 // $config['base_url'] = 'https://newapp.mcxcommodityuniversity.com';
 $config['base_url'] = getenv('APP_URL');
+
+// Serve links with the same scheme as the current request. Behind LiteSpeed/
+// proxies an http:// APP_URL on an https:// page makes AJAX posts hit a 301
+// redirect (POST data is lost and login returns HTML instead of JSON).
+$is_https = (!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off')
+    || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https')
+    || (isset($_SERVER['SERVER_PORT']) && (int) $_SERVER['SERVER_PORT'] === 443);
+if (empty($config['base_url']) && !empty($_SERVER['HTTP_HOST']) && preg_match('/^[a-z0-9.\-]+(:\d+)?$/i', $_SERVER['HTTP_HOST'])) {
+    $config['base_url'] = ($is_https ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/';
+}
+if ($is_https && strpos((string) $config['base_url'], 'http://') === 0) {
+    $config['base_url'] = 'https://' . substr($config['base_url'], 7);
+}
+unset($is_https);
 /*
 |--------------------------------------------------------------------------
 | Index File
