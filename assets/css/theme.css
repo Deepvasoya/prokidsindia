@@ -1248,7 +1248,10 @@ body.login-container::before {
     pointer-events: none;
     z-index: 0;
 }
-body.login-container > * { position: relative; z-index: 1; }
+/* Lift only the page content above the confetti layer; popups (.mfp-*), toasts
+   and the preloader must keep their own position: fixed. */
+body.login-container > .container,
+body.login-container > section { position: relative; z-index: 1; }
 
 .login-inner-section {
     max-width: 1080px;
