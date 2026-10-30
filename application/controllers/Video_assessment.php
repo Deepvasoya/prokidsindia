@@ -99,7 +99,7 @@ class Video_assessment extends CI_Controller {
             }
         }
 
-        $type = (isset($post['question_type']) && $post['question_type'] === 'fill') ? 'fill' : 'mcq';
+        $type = $this->pick(isset($post['question_type']) ? $post['question_type'] : 'mcq', array('mcq', 'fill', 'drag', 'match'), 'mcq');
         $question_media_type = $this->pick(isset($post['question_media_type']) ? $post['question_media_type'] : 'none', array('none', 'image', 'audio', 'video'), 'none');
         $question_text = isset($post['question_text']) ? trim($post['question_text']) : '';
 
@@ -151,7 +151,8 @@ class Video_assessment extends CI_Controller {
             'answers'             => NULL,
         );
 
-        if ($type === 'mcq') {
+        if ($type === 'mcq' || $type === 'drag') {
+            // "drag" (drag & drop selection) stores options exactly like an MCQ.
             $option_type = $this->pick(isset($post['option_type']) ? $post['option_type'] : 'text', array('text', 'image', 'audio', 'video'), 'text');
             $count = (isset($post['option_count']) && (int) $post['option_count'] === 3) ? 3 : 4;
 
@@ -198,6 +199,50 @@ class Video_assessment extends CI_Controller {
             $row['option_type']    = $option_type;
             $row['options']        = json_encode($options, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             $row['correct_option'] = $correct;
+        } elseif ($type === 'match') {
+            // Matching: 2-4 pairs; each side can be text, image, audio or video.
+            // Stored in `options` as {"left_type","right_type","pairs":[{"left":{text,media},"right":{text,media}}]}
+            $kinds      = array('text', 'image', 'audio', 'video');
+            $left_type  = $this->pick(isset($post['pair_left_type']) ? $post['pair_left_type'] : 'text', $kinds, 'text');
+            $right_type = $this->pick(isset($post['pair_right_type']) ? $post['pair_right_type'] : 'image', $kinds, 'image');
+            $count      = isset($post['pair_count']) ? max(2, min(4, (int) $post['pair_count'])) : 4;
+
+            $old = ($existing && $existing['question_type'] === 'match') ? (json_decode($existing['options'], TRUE) ?: array()) : array();
+            $pairs = array();
+            for ($i = 0; $i < $count; $i++) {
+                $pair = array();
+                foreach (array('left' => $left_type, 'right' => $right_type) as $side => $kind) {
+                    $texts = isset($post['pair_' . $side . '_text']) && is_array($post['pair_' . $side . '_text']) ? $post['pair_' . $side . '_text'] : array();
+                    $text  = isset($texts[$i]) ? trim($texts[$i]) : '';
+                    $media = '';
+                    if ($kind !== 'text') {
+                        if (isset($old[$side . '_type'], $old['pairs'][$i][$side]['media']) && $old[$side . '_type'] === $kind) {
+                            $media = $old['pairs'][$i][$side]['media'];
+                        }
+                        $field = 'pair_' . $side . '_file_' . $i;
+                        if (!empty($_FILES[$field]['name'])) {
+                            $up = $this->upload($field, $kind);
+                            if (isset($up['error'])) {
+                                $this->remove_files($new_files);
+                                return $this->json(0, 'Pair ' . ($i + 1) . ' (' . $side . '): ' . $up['error']);
+                            }
+                            $media = $new_files[] = $up['path'];
+                        }
+                        if ($media === '') {
+                            $this->remove_files($new_files);
+                            return $this->json(0, 'Please upload the ' . $kind . ' for pair ' . ($i + 1) . ' (' . $side . ' side).');
+                        }
+                    } elseif ($text === '') {
+                        $this->remove_files($new_files);
+                        return $this->json(0, 'Please fill in pair ' . ($i + 1) . ' (' . $side . ' side).');
+                    }
+                    $pair[$side] = array('text' => $text, 'media' => $media);
+                }
+                $pairs[] = $pair;
+            }
+
+            $row['option_type'] = $right_type;
+            $row['options']     = json_encode(array('left_type' => $left_type, 'right_type' => $right_type, 'pairs' => $pairs), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         } else {
             $raw     = isset($post['answers']) ? $post['answers'] : '';
             $answers = array_values(array_unique(array_filter(array_map('trim', preg_split('/\r\n|\r|\n|\|/', $raw)), 'strlen')));
@@ -304,6 +349,16 @@ class Video_assessment extends CI_Controller {
             $files[] = $row['question_media'];
         }
         $options = is_array($row['options']) ? $row['options'] : (json_decode((string) $row['options'], TRUE) ?: array());
+        if (isset($options['pairs'])) {
+            foreach ($options['pairs'] as $pair) {
+                foreach (array('left', 'right') as $side) {
+                    if (!empty($pair[$side]['media'])) {
+                        $files[] = $pair[$side]['media'];
+                    }
+                }
+            }
+            $options = array();
+        }
         foreach ($options as $opt) {
             if (!empty($opt['media'])) {
                 $files[] = $opt['media'];

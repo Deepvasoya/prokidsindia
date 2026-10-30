@@ -1,5 +1,13 @@
 <?php
     $media_url = function ($path) { return $path ? base_url($path) : ''; };
+    $media_tag = function ($kind, $item) use ($media_url) {
+        $html = '';
+        if ($kind === 'image') { $html .= '<img src="' . $media_url($item['media']) . '" alt="" loading="lazy">'; }
+        elseif ($kind === 'audio') { $html .= '<audio src="' . $media_url($item['media']) . '" controls preload="none"></audio>'; }
+        elseif ($kind === 'video') { $html .= '<video src="' . $media_url($item['media']) . '" controls preload="none"></video>'; }
+        if ($item['text'] !== '') { $html .= '<div>' . html_escape($item['text']) . '</div>'; }
+        return $html;
+    };
     $type_labels = array('text' => 'Text', 'image' => 'Picture', 'audio' => 'Audio', 'video' => 'Video', 'none' => 'Text');
     $total_marks = 0;
     foreach ($questions as $q) { if ($q['status']) { $total_marks += $q['marks']; } }
@@ -57,6 +65,19 @@
 .va-opt-body img { max-width: 100%; max-height: 110px; border-radius: 10px; display: block; }
 .va-opt-body video { width: 100%; border-radius: 10px; background: #000; display: block; }
 .va-opt-body audio { width: 100%; }
+.va-tag.drag { background: #e2f7fb; color: #0a7f99; }
+.va-tag.match { background: #efeaff; color: #5b3fc4; }
+.va-pairs { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; }
+.va-pair { display: flex; align-items: center; gap: 10px; padding: 10px; border: 2px solid #eef0f7; border-radius: 14px; }
+.va-pair-side { flex: 1; min-width: 0; font-weight: 700; text-align: center; word-break: break-word; }
+.va-pair-side img { max-width: 100%; max-height: 90px; border-radius: 10px; display: block; margin: 0 auto; }
+.va-pair-side video { width: 100%; border-radius: 10px; background: #000; display: block; }
+.va-pair-side audio { width: 100%; }
+.va-pair-link { flex: 0 0 32px; height: 32px; border-radius: 50%; background: #efeaff; color: #7c5cff; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.va-matchrow { display: grid; grid-template-columns: 30px 1fr 24px 1fr; gap: 10px; align-items: start; border: 2px solid #eef0f7; border-radius: 16px; padding: 12px; margin-bottom: 10px; }
+.va-matchrow .va-opt-letter { margin-top: 8px; }
+.va-matchrow .va-pair-link { margin-top: 6px; width: 24px; height: 24px; flex: none; font-size: 12px; }
+.va-matchside { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .va-answers { display: flex; flex-wrap: wrap; gap: 6px; }
 .va-answers span { padding: 6px 12px; border-radius: 10px; background: #f0fbf6; color: #16a374; font-weight: 700; border: 1px solid #c9efdf; }
 .va-actions { display: flex; flex-direction: column; gap: 8px; }
@@ -83,7 +104,8 @@
 .va-seg span { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 12px; border: 2px solid #eceefa; font-weight: 700; color: #3f4a6b; background: #fff; transition: all .15s; }
 .va-seg input:checked + span { border-color: #5b6cff; background: #eef0ff; color: #4453e6; }
 .va-seg input:focus-visible + span { box-shadow: 0 0 0 4px rgba(91,108,255,.18); }
-.va-typecards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.va-typecards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+@media (max-width: 991px) { .va-typecards { grid-template-columns: 1fr 1fr; } }
 .va-typecards span { flex-direction: column; align-items: flex-start; padding: 14px 16px; width: 100%; }
 .va-typecards small { font-weight: 600; color: #7a84a3; }
 .va-hint { font-size: 12.5px; color: #7a84a3; margin-top: 6px; }
@@ -108,7 +130,9 @@ body.va-modal-open { overflow: hidden; }
     .va-card { flex-wrap: wrap; padding: 14px; }
     .va-actions { flex-direction: row; width: 100%; justify-content: flex-end; }
     .va-dialog { padding: 22px 16px; }
-    .va-typecards, .va-grid2 { grid-template-columns: 1fr; }
+    .va-grid2 { grid-template-columns: 1fr; }
+    .va-matchrow { grid-template-columns: 26px 1fr; }
+    .va-matchrow .va-pair-link { display: none; }
 }
 </style>
 
@@ -158,6 +182,10 @@ body.va-modal-open { overflow: hidden; }
                     <div class="va-tags">
                         <?php if ($q['question_type'] === 'mcq') { ?>
                             <span class="va-tag mcq">MCQ &middot; <?php echo $type_labels[$q['option_type']]; ?> options</span>
+                        <?php } elseif ($q['question_type'] === 'drag') { ?>
+                            <span class="va-tag drag">Drag &amp; drop &middot; <?php echo $type_labels[$q['option_type']]; ?> cards</span>
+                        <?php } elseif ($q['question_type'] === 'match') { ?>
+                            <span class="va-tag match">Matching &middot; <?php echo $type_labels[$q['options']['left_type']]; ?> &rarr; <?php echo $type_labels[$q['options']['right_type']]; ?></span>
                         <?php } else { ?>
                             <span class="va-tag fill">Fill up / Type answer</span>
                         <?php } ?>
@@ -175,7 +203,17 @@ body.va-modal-open { overflow: hidden; }
                         </div>
                     <?php } ?>
 
-                    <?php if ($q['question_type'] === 'mcq') { ?>
+                    <?php if ($q['question_type'] === 'match') { ?>
+                        <div class="va-pairs">
+                            <?php foreach ($q['options']['pairs'] as $pi => $pair) { ?>
+                            <div class="va-pair">
+                                <div class="va-pair-side"><?php echo $media_tag($q['options']['left_type'], $pair['left']); ?></div>
+                                <div class="va-pair-link">&harr;</div>
+                                <div class="va-pair-side"><?php echo $media_tag($q['options']['right_type'], $pair['right']); ?></div>
+                            </div>
+                            <?php } ?>
+                        </div>
+                    <?php } elseif ($q['question_type'] === 'mcq' || $q['question_type'] === 'drag') { ?>
                         <div class="va-opts">
                             <?php foreach ($q['options'] as $oi => $opt) { $ok = ((int) $q['correct_option'] === $oi); ?>
                             <div class="va-opt <?php echo $ok ? 'ok' : ''; ?>">
@@ -224,6 +262,8 @@ body.va-modal-open { overflow: hidden; }
                 <div class="va-seg va-typecards">
                     <label><input type="radio" name="question_type" value="mcq" checked><span>&#9989; Multiple Choice (MCQ)<small>3 or 4 options - text, picture, audio or video</small></span></label>
                     <label><input type="radio" name="question_type" value="fill"><span>&#9997;&#65039; Fill up / Type answer<small>Student types the answer</small></span></label>
+                    <label><input type="radio" name="question_type" value="drag"><span>&#9995; Drag &amp; Drop<small>Drag the correct card into the box</small></span></label>
+                    <label><input type="radio" name="question_type" value="match"><span>&#128279; Matching<small>Match words, pictures, sounds or videos (2-4 pairs)</small></span></label>
                 </div>
             </div>
 
@@ -269,7 +309,7 @@ body.va-modal-open { overflow: hidden; }
                     </div>
                 </div>
                 <div class="va-section">
-                    <span class="va-label">Options &mdash; tick the correct answer</span>
+                    <span class="va-label" data-va-opts-title>Options &mdash; tick the correct answer</span>
                     <?php for ($o = 0; $o < 4; $o++) { ?>
                     <div class="va-optrow" data-opt="<?php echo $o; ?>">
                         <div class="va-opt-letter"><?php echo chr(65 + $o); ?></div>
@@ -284,6 +324,57 @@ body.va-modal-open { overflow: hidden; }
                     </div>
                     <?php } ?>
                     <div class="va-hint" data-va-opt-hint></div>
+                </div>
+            </div>
+
+            <!-- Matching -->
+            <div id="vaMatch" style="display:none">
+                <div class="va-section">
+                    <span class="va-label">Number of pairs</span>
+                    <div class="va-seg">
+                        <label><input type="radio" name="pair_count" value="2"><span>2 pairs</span></label>
+                        <label><input type="radio" name="pair_count" value="3"><span>3 pairs</span></label>
+                        <label><input type="radio" name="pair_count" value="4" checked><span>4 pairs</span></label>
+                    </div>
+                </div>
+                <div class="va-grid2 va-section">
+                    <div>
+                        <span class="va-label">Left side (stays in place)</span>
+                        <div class="va-seg">
+                            <label><input type="radio" name="pair_left_type" value="text" checked><span>Word</span></label>
+                            <label><input type="radio" name="pair_left_type" value="image"><span>Picture</span></label>
+                            <label><input type="radio" name="pair_left_type" value="audio"><span>Audio</span></label>
+                            <label><input type="radio" name="pair_left_type" value="video"><span>Video</span></label>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="va-label">Right side (student drags these)</span>
+                        <div class="va-seg">
+                            <label><input type="radio" name="pair_right_type" value="text"><span>Word</span></label>
+                            <label><input type="radio" name="pair_right_type" value="image" checked><span>Picture</span></label>
+                            <label><input type="radio" name="pair_right_type" value="audio"><span>Audio</span></label>
+                            <label><input type="radio" name="pair_right_type" value="video"><span>Video</span></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="va-section">
+                    <span class="va-label">Pairs &mdash; put matching items on the same row (students see the right side shuffled)</span>
+                    <?php for ($o = 0; $o < 4; $o++) { ?>
+                    <div class="va-matchrow" data-pair="<?php echo $o; ?>">
+                        <div class="va-opt-letter"><?php echo $o + 1; ?></div>
+                        <?php foreach (array('left', 'right') as $side) { ?>
+                        <div class="va-matchside" data-side="<?php echo $side; ?>">
+                            <input type="text" class="form-control" name="pair_<?php echo $side; ?>_text[<?php echo $o; ?>]" data-va-pair-text>
+                            <div data-va-pair-media style="display:none">
+                                <input type="file" class="form-control" name="pair_<?php echo $side; ?>_file_<?php echo $o; ?>" data-va-pair-file="<?php echo $side; ?>">
+                                <div class="va-file-preview" data-va-pair-preview></div>
+                            </div>
+                        </div>
+                        <?php if ($side === 'left') { ?><div class="va-pair-link">&harr;</div><?php } ?>
+                        <?php } ?>
+                    </div>
+                    <?php } ?>
+                    <div class="va-hint">Example: Word &rarr; Picture: "Cat" on the left and a cat picture on the right.</div>
                 </div>
             </div>
 
@@ -337,9 +428,28 @@ document.addEventListener('DOMContentLoaded', function () {
     function val(name) { return $form.find('[name="' + name + '"]:checked').val(); }
 
     function refresh() {
-        var isMcq = val('question_type') === 'mcq';
+        var qt = val('question_type');
+        var isMcq = (qt === 'mcq' || qt === 'drag');
         $('#vaMcq').toggle(isMcq);
-        $('#vaFill').toggle(!isMcq);
+        $('#vaMatch').toggle(qt === 'match');
+        $('#vaFill').toggle(qt === 'fill');
+        $form.find('[data-va-opts-title]').html(qt === 'drag'
+            ? 'Cards students can drag &mdash; tick the one that belongs in the box'
+            : 'Options &mdash; tick the correct answer');
+
+        var pc = parseInt(val('pair_count'), 10) || 4;
+        $form.find('.va-matchrow').each(function () {
+            $(this).toggle(parseInt($(this).data('pair'), 10) < pc);
+            $(this).find('.va-matchside').each(function () {
+                var side = $(this).data('side');
+                var kind = val('pair_' + side + '_type');
+                $(this).find('[data-va-pair-media]').toggle(kind !== 'text');
+                $(this).find('[data-va-pair-media] input').attr('accept', accept[kind] ? accept[kind].attr : '');
+                $(this).find('[data-va-pair-text]').attr('placeholder', kind === 'text'
+                    ? (side === 'left' ? 'Left word' : 'Right word')
+                    : 'Label (optional)');
+            });
+        });
 
         var qm = val('question_media_type');
         $('#vaQMediaWrap').toggle(qm !== 'none');
@@ -380,7 +490,7 @@ document.addEventListener('DOMContentLoaded', function () {
         $form[0].reset();
         $form.find('[name="id"]').val('');
         $('#vaQMediaPreview').empty();
-        $form.find('[data-va-opt-preview]').empty();
+        $form.find('[data-va-opt-preview], [data-va-pair-preview]').empty();
         refresh();
     }
 
@@ -389,7 +499,8 @@ document.addEventListener('DOMContentLoaded', function () {
         var file = this.files && this.files[0];
         var $preview = $(this).siblings('.va-file-preview');
         if (!file) return;
-        var kind = this.id === 'vaQMediaFile' ? val('question_media_type') : val('option_type');
+        var side = $(this).data('va-pair-file');
+        var kind = this.id === 'vaQMediaFile' ? val('question_media_type') : (side ? val('pair_' + side + '_type') : val('option_type'));
         $preview.html(mediaTag(kind, URL.createObjectURL(file)));
     });
     $form.on('change', 'input[type="radio"]', refresh);
@@ -423,7 +534,19 @@ document.addEventListener('DOMContentLoaded', function () {
             $('#vaQMediaPreview').html(mediaTag(q.question_media_type, mediaUrl(q.question_media)));
             $('#vaMarks').val(parseFloat(q.marks));
             $('#vaShowAt').val(q.show_at);
-            if (q.question_type === 'mcq') {
+            if (q.question_type === 'match') {
+                var m = q.options || {};
+                $form.find('[name="pair_count"][value="' + (m.pairs ? m.pairs.length : 4) + '"]').prop('checked', true);
+                $form.find('[name="pair_left_type"][value="' + m.left_type + '"]').prop('checked', true);
+                $form.find('[name="pair_right_type"][value="' + m.right_type + '"]').prop('checked', true);
+                $.each(m.pairs || [], function (i, pair) {
+                    $.each(['left', 'right'], function (_, side) {
+                        var $side = $form.find('.va-matchrow[data-pair="' + i + '"] .va-matchside[data-side="' + side + '"]');
+                        $side.find('[data-va-pair-text]').val(pair[side].text || '');
+                        $side.find('[data-va-pair-preview]').html(mediaTag(m[side + '_type'], mediaUrl(pair[side].media)));
+                    });
+                });
+            } else if (q.question_type === 'mcq' || q.question_type === 'drag') {
                 $form.find('[name="option_count"][value="' + (q.options.length === 3 ? 3 : 4) + '"]').prop('checked', true);
                 $form.find('[name="option_type"][value="' + q.option_type + '"]').prop('checked', true);
                 $.each(q.options, function (i, opt) {

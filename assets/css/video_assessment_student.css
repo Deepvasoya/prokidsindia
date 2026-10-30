@@ -124,3 +124,75 @@ audio.vas-opt-media { margin-top: 26px; }
 @media (prefers-reduced-motion: reduce) { .vas-overlay.open, .vas-card { animation: none; } }
 .vas-options:not(.vas-options-text) .vas-letter { width: 32px; height: 32px; flex: none; box-shadow: 0 2px 6px rgba(31,42,77,.15); }
 .vas-options:not(.vas-options-text) .vas-option { padding-top: 16px; }
+
+/* ---------- Drag & drop and Matching ---------- */
+.vas-help { margin: -6px 0 14px; padding: 0; color: #7a84a3; font-weight: 700; font-size: 14px; }
+.vas-drop {
+    min-height: 120px; margin-bottom: 16px; padding: 14px; border-radius: 22px;
+    border: 3px dashed #c9cff5; background: #f7f8fe; display: flex; align-items: center; justify-content: center;
+    transition: border-color .15s ease, background .15s ease;
+}
+.vas-drop-hint { color: #8f97b8; font-weight: 800; font-size: 15px; text-align: center; pointer-events: none; }
+.vas-pool {
+    display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; min-height: 70px;
+    padding: 12px; border-radius: 20px; background: #fff8ec;
+}
+.vas-dcard {
+    position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    min-width: 110px; max-width: 220px; min-height: 56px; padding: 10px 14px; border-radius: 18px;
+    background: #fff; border: 3px solid #eceefa; box-shadow: 0 4px 12px rgba(31,42,77,.08);
+    cursor: grab; user-select: none; touch-action: manipulation;
+    transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+.vas-dcard:hover { transform: translateY(-2px); border-color: #8f7bff; }
+.vas-dcard:focus-visible { outline: 0; box-shadow: 0 0 0 4px rgba(91,108,255,.25); }
+.vas-dcard.is-dragging { opacity: .45; }
+.vas-dcard.is-selected { border-color: #5b6cff; box-shadow: 0 0 0 4px rgba(91,108,255,.25); transform: translateY(-3px) scale(1.03); }
+.vas-dcard.is-correct { border-color: #22c58b; background: #effcf6; }
+.vas-dcard.is-wrong { border-color: #ff5c8a; background: #fff1f5; }
+.vas-card-text { font-family: var(--pk-font-head, inherit); font-size: 19px; font-weight: 600; color: #1f2a4d; text-align: center; }
+.vas-card-label { font-size: 13px; font-weight: 800; color: #3f4a6b; }
+.vas-card-media { display: block; max-width: 100%; border-radius: 12px; pointer-events: auto; }
+img.vas-card-media { max-height: 110px; object-fit: contain; pointer-events: none; }
+video.vas-card-media { width: 190px; aspect-ratio: 16 / 10; background: #000; }
+audio.vas-card-media { width: 190px; }
+.vas-move { border: 0; border-radius: 999px; padding: 5px 14px; background: #eef0ff; color: #4453e6; font-weight: 800; font-size: 13px; cursor: pointer; }
+.vas-dcard.is-selected .vas-move { background: #5b6cff; color: #fff; }
+.vas-over { border-color: #5b6cff !important; background: #eef0ff !important; }
+.vas-drop .vas-dcard { max-width: 280px; }
+
+.vas-mrows { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+.vas-mrow { display: grid; grid-template-columns: 1fr 34px 1fr; gap: 10px; align-items: stretch; }
+.vas-mleft {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 72px; padding: 10px;
+    border-radius: 18px; background: #eef0ff; border: 3px solid #dfe3ff;
+}
+.vas-mleft img.vas-card-media { pointer-events: auto; }
+.vas-mlink { display: flex; align-items: center; justify-content: center; color: #8f7bff; font-size: 22px; font-weight: 800; }
+.vas-mslot {
+    position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    min-height: 72px; padding: 8px; border-radius: 18px; border: 3px dashed #c9cff5; background: #f7f8fe; cursor: pointer;
+    transition: border-color .15s ease, background .15s ease;
+}
+.vas-mslot.is-target { border-color: #8f7bff; background: #f3f0ff; }
+.vas-mslot .vas-dcard { max-width: 100%; box-shadow: none; }
+.vas-mslot.is-correct { border-style: solid; border-color: #22c58b; background: #effcf6; }
+.vas-mslot.is-wrong { border-style: solid; border-color: #ff5c8a; background: #fff1f5; }
+.vas-mfix { font-size: 13px; font-weight: 800; color: #11865c; display: flex; align-items: center; gap: 6px; }
+.vas-mfix-media { max-height: 36px; border-radius: 6px; }
+.vas-actions { display: flex; justify-content: flex-end; margin-top: 14px; }
+
+@media (max-width: 600px) {
+    .vas-mrow { grid-template-columns: 1fr 22px 1fr; gap: 6px; }
+    .vas-mlink { font-size: 16px; }
+    .vas-dcard { min-width: 90px; padding: 8px 10px; }
+    .vas-card-text { font-size: 16px; }
+    video.vas-card-media, audio.vas-card-media { width: 140px; }
+    .vas-actions .vas-btn { width: 100%; }
+}
+/* compact matching rows */
+.vas-mrow .vas-mleft, .vas-mrow .vas-mslot { min-height: 64px; }
+.vas-mleft img.vas-card-media, .vas-mslot img.vas-card-media, .vas-pool-image img.vas-card-media { max-height: 76px; }
+.vas-mleft .vas-card-text { font-size: 20px; }
+.vas-mslot .vas-dcard { padding: 6px 10px; min-height: 0; }
+.vas-mfix-media { max-height: 40px; }

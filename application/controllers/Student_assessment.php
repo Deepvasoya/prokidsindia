@@ -34,23 +34,43 @@ class Student_assessment extends CI_Controller {
 
         $rows = $this->active_questions($video['id']);
         $questions = array();
+        $perms = (array) $this->session->userdata('vas_match_perm');
         foreach ($rows as $q) {
             $options = array();
-            foreach ($this->decode($q['options']) as $opt) {
-                $options[] = array('text' => $opt['text'], 'media' => $opt['media'] ? base_url($opt['media']) : '');
+            $extra   = array();
+            if ($q['question_type'] === 'mcq' || $q['question_type'] === 'drag') {
+                foreach ($this->decode($q['options']) as $opt) {
+                    $options[] = $this->item($opt);
+                }
+            } elseif ($q['question_type'] === 'match') {
+                // Right-hand cards are shuffled here and the order is kept in the session,
+                // so the browser never learns which card belongs to which slot.
+                $m = $this->decode($q['options']);
+                $pairs = isset($m['pairs']) ? $m['pairs'] : array();
+                $perm = range(0, count($pairs) - 1);
+                if (count($perm) > 1) {
+                    do { shuffle($perm); } while ($perm === range(0, count($pairs) - 1));
+                }
+                $perms[$q['id']] = $perm;
+                $left = array(); $right = array();
+                foreach ($pairs as $pair) { $left[] = $this->item($pair['left']); }
+                foreach ($perm as $orig) { $right[] = $this->item($pairs[$orig]['right']); }
+                $extra = array('left_type' => $m['left_type'], 'right_type' => $m['right_type'], 'left' => $left, 'right' => $right);
             }
-            $questions[] = array(
+            $questions[] = $extra + array(
                 'id'          => (int) $q['id'],
                 'type'        => $q['question_type'],
                 'text'        => (string) $q['question_text'],
                 'media_type'  => $q['question_media_type'],
                 'media'       => $q['question_media'] ? base_url($q['question_media']) : '',
                 'option_type' => $q['option_type'],
-                'options'     => $q['question_type'] === 'mcq' ? $options : array(),
+                'options'     => $options,
                 'marks'       => (float) $q['marks'],
                 'show_at'     => $q['show_at_seconds'] !== NULL ? (int) $q['show_at_seconds'] : NULL,
             );
         }
+
+        $this->session->set_userdata('vas_match_perm', $perms);
 
         $last = NULL;
         if ($this->db->table_exists('video_assessment_attempts')) {
@@ -68,12 +88,17 @@ class Student_assessment extends CI_Controller {
         if (!$q) {
             return $this->json(0, 'Question not found.');
         }
-        $answer  = $this->input->post('answer');
-        $correct = $this->is_correct($q, $answer);
+        $answer = $this->input->post('answer');
+        $grade  = $this->grade($q, $answer);
 
-        $extra = array('correct' => $correct, 'marks' => $correct ? (float) $q['marks'] : 0);
-        if ($q['question_type'] === 'mcq') {
+        $extra = array('correct' => $grade['correct'], 'marks' => $grade['earned']);
+        if ($q['question_type'] === 'mcq' || $q['question_type'] === 'drag') {
             $extra['correct_option'] = (int) $q['correct_option'];
+        } elseif ($q['question_type'] === 'match') {
+            // For each left slot: the position of its correct card, and whether the student got it.
+            $perm = $this->match_perm($q['id']);
+            $extra['correct_positions'] = $perm ? array_map(function ($i) use ($perm) { return array_search($i, $perm, TRUE); }, array_keys($perm)) : array();
+            $extra['pair_results'] = $grade['pairs'];
         } else {
             $answers = $this->decode($q['answers']);
             $extra['correct_answer'] = isset($answers[0]) ? $answers[0] : '';
@@ -97,12 +122,12 @@ class Student_assessment extends CI_Controller {
         foreach ($questions as $q) {
             $total += $q['marks'];
             $answer = isset($given[$q['id']]) ? $given[$q['id']] : NULL;
-            $ok = $answer !== NULL && $this->is_correct($q, $answer);
-            if ($ok) {
-                $score += $q['marks'];
+            $grade  = $answer !== NULL ? $this->grade($q, $answer) : array('correct' => FALSE, 'earned' => 0);
+            $score += $grade['earned'];
+            if ($grade['correct']) {
                 $right++;
             }
-            $detail[$q['id']] = array('answer' => $answer, 'correct' => $ok ? 1 : 0);
+            $detail[$q['id']] = array('answer' => $answer, 'correct' => $grade['correct'] ? 1 : 0, 'earned' => $grade['earned']);
         }
 
         $this->db->insert('video_assessment_attempts', array(
@@ -115,6 +140,7 @@ class Student_assessment extends CI_Controller {
             'answers'        => json_encode($detail, JSON_UNESCAPED_UNICODE),
         ));
 
+        $score = round($score, 2);
         return $this->json(1, '', array(
             'score' => $score, 'total_marks' => $total, 'correct_count' => $right, 'question_count' => count($questions),
         ));
@@ -152,11 +178,47 @@ class Student_assessment extends CI_Controller {
         return ($q && $this->get_video((int) $q['video_id'])) ? $q : NULL;
     }
 
+    private function item($it) {
+        return array('text' => isset($it['text']) ? (string) $it['text'] : '', 'media' => !empty($it['media']) ? base_url($it['media']) : '');
+    }
+
+    private function match_perm($question_id) {
+        $perms = (array) $this->session->userdata('vas_match_perm');
+        return isset($perms[$question_id]) && is_array($perms[$question_id]) ? $perms[$question_id] : NULL;
+    }
+
+    /**
+     * Grade one answer. Matching gives part marks per correct pair; other types
+     * are all-or-nothing. Returns ['correct'=>bool, 'earned'=>float, 'pairs'=>bool[]].
+     */
+    private function grade($q, $answer) {
+        $marks = (float) $q['marks'];
+        if ($q['question_type'] !== 'match') {
+            $ok = $this->is_correct($q, $answer);
+            return array('correct' => $ok, 'earned' => $ok ? $marks : 0, 'pairs' => array());
+        }
+        // answer = JSON array: answer[leftIndex] = position of the card the student placed there
+        $perm   = $this->match_perm($q['id']);
+        $placed = is_string($answer) ? json_decode($answer, TRUE) : $answer;
+        if (!$perm || !is_array($placed)) {
+            return array('correct' => FALSE, 'earned' => 0, 'pairs' => array());
+        }
+        $pairs = array(); $right = 0;
+        foreach (array_keys($perm) as $i) {
+            $pos = isset($placed[$i]) && is_numeric($placed[$i]) ? (int) $placed[$i] : -1;
+            $ok  = $pos >= 0 && isset($perm[$pos]) && (int) $perm[$pos] === $i;
+            $pairs[] = $ok;
+            if ($ok) { $right++; }
+        }
+        $n = count($perm);
+        return array('correct' => $right === $n, 'earned' => $n ? round($marks * $right / $n, 2) : 0, 'pairs' => $pairs);
+    }
+
     private function is_correct($q, $answer) {
         if (is_array($answer)) {
             return FALSE;
         }
-        if ($q['question_type'] === 'mcq') {
+        if ($q['question_type'] === 'mcq' || $q['question_type'] === 'drag') {
             return $answer !== '' && ctype_digit((string) $answer) && (int) $answer === (int) $q['correct_option'];
         }
         $given = $this->normalise($answer);

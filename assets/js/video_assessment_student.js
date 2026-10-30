@@ -31,6 +31,15 @@
         return '';
     }
 
+    function cardInner(kind, item) {
+        if (kind === 'text') { return '<span class="vas-card-text">' + esc(item.text) + '</span>'; }
+        return media(kind, item.media, 'vas-card-media') + (item.text ? '<span class="vas-card-label">' + esc(item.text) + '</span>' : '');
+    }
+    function dragCard(kind, item, attrs) {
+        var handle = (kind === 'audio' || kind === 'video') ? '<button type="button" class="vas-move" data-vas="move">&#9995; Move</button>' : '';
+        return '<div class="vas-dcard vas-kind-' + kind + '" draggable="true" tabindex="0" ' + attrs + '>' + cardInner(kind, item) + handle + '</div>';
+    }
+
     /* ---------- player adapter: native <video> or Plyr (YouTube) ---------- */
     function player() {
         if (window.playerx && typeof window.playerx.on === 'function') {
@@ -132,6 +141,26 @@
                     }
                     return '<button type="button" class="vas-option" data-vas="pick" data-index="' + i + '"><span class="vas-letter">' + letter + '</span>' + inner + '</button>';
                 }).join('') + '</div>';
+        } else if (q.type === 'drag') {
+            body = '<div class="vas-drop" data-vas-zone="drop"><span class="vas-drop-hint">&#11015; Drag the answer here (or tap a card)</span></div>' +
+                   '<div class="vas-pool vas-pool-' + q.option_type + '" data-vas-zone="pool">' +
+                   $.map(q.options, function (opt, i) { return dragCard(q.option_type, opt, 'data-index="' + i + '"'); }).join('') +
+                   '</div>' +
+                   '<div class="vas-actions"><button type="button" class="vas-btn vas-btn-main" data-vas="dragcheck" disabled>Check &#10003;</button></div>';
+        } else if (q.type === 'match') {
+            body = '<p class="vas-help">Drag each card to its partner &mdash; or tap a card, then tap a box.</p>' +
+                   '<div class="vas-mrows">' +
+                   $.map(q.left, function (item, i) {
+                       return '<div class="vas-mrow">' +
+                                  '<div class="vas-mleft vas-kind-' + q.left_type + '">' + cardInner(q.left_type, item) + '</div>' +
+                                  '<div class="vas-mlink">&rarr;</div>' +
+                                  '<div class="vas-mslot" data-vas-zone="slot" data-slot="' + i + '"><span class="vas-drop-hint">Drop here</span></div>' +
+                              '</div>';
+                   }).join('') + '</div>' +
+                   '<div class="vas-pool vas-pool-' + q.right_type + '" data-vas-zone="pool">' +
+                   $.map(q.right, function (item, p) { return dragCard(q.right_type, item, 'data-pos="' + p + '"'); }).join('') +
+                   '</div>' +
+                   '<div class="vas-actions"><button type="button" class="vas-btn vas-btn-main" data-vas="matchcheck" disabled>Check &#10003;</button></div>';
         } else {
             body = '<form class="vas-fill" data-vas-form>' +
                    '<input type="text" class="vas-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type your answer here">' +
@@ -176,22 +205,49 @@
 
     function feedback(q, answer, res) {
         var $card = overlay().find('.vas-card');
+        var wrongMsg = '';
         if (q.type === 'mcq') {
             $card.find('.vas-option').each(function () {
                 var i = parseInt($(this).data('index'), 10);
                 if (i === res.correct_option) { $(this).addClass('is-correct'); }
                 else if (String(i) === String(answer)) { $(this).addClass('is-wrong'); }
             });
+            wrongMsg = 'The answer is <b>' + String.fromCharCode(65 + res.correct_option) + '</b>';
+        } else if (q.type === 'drag') {
+            $card.find('.vas-dcard').each(function () {
+                var i = parseInt($(this).data('index'), 10);
+                if (i === res.correct_option) { $(this).addClass('is-correct'); }
+                else if (String(i) === String(answer)) { $(this).addClass('is-wrong'); }
+            });
+            wrongMsg = 'The right card is shown in green.';
+        } else if (q.type === 'match') {
+            var got = 0;
+            $card.find('.vas-mslot').each(function () {
+                var slot = parseInt($(this).data('slot'), 10);
+                var ok = !!(res.pair_results || [])[slot];
+                if (ok) { got++; }
+                $(this).addClass(ok ? 'is-correct' : 'is-wrong');
+                if (!ok && res.correct_positions && res.correct_positions[slot] !== undefined) {
+                    var item = q.right[res.correct_positions[slot]];
+                    $(this).append('<div class="vas-mfix">&#10003; ' + (q.right_type === 'text' ? esc(item.text)
+                        : media(q.right_type === 'video' ? 'image' : q.right_type, q.right_type === 'video' ? '' : item.media, 'vas-mfix-media') + (item.text ? esc(item.text) : (q.right_type === 'video' ? 'see video ' + (res.correct_positions[slot] + 1) : ''))) + '</div>');
+                }
+            });
+            wrongMsg = 'You matched <b>' + got + ' of ' + q.left.length + '</b> &middot; +' + num(res.marks) + ' mark' + (res.marks == 1 ? '' : 's');
         } else {
             $card.find('.vas-input').addClass(res.correct ? 'is-correct' : 'is-wrong');
         }
         $card.find('audio, video').each(function () { this.pause(); });
+        // Drag/match: the tray and the Check button are no longer needed once answered.
+        $card.find('.vas-actions').remove();
+        $card.find('[data-vas-zone="pool"]').filter(function () { return !$(this).children().length; }).remove();
+        $card.find('.vas-dcard').attr('draggable', 'false');
 
         var right = ['Great job!', 'Super!', 'Well done!', 'Awesome!', 'You got it!'];
         var msg = res.correct
             ? '<div class="vas-msg vas-msg-ok"><span class="vas-emoji">&#127881;</span> ' + right[Math.floor(Math.random() * right.length)] + '</div>'
-            : '<div class="vas-msg vas-msg-bad"><span class="vas-emoji">&#128161;</span> Good try! The answer is <b>' +
-              (q.type === 'mcq' ? String.fromCharCode(65 + res.correct_option) : esc(res.correct_answer)) + '</b></div>';
+            : '<div class="vas-msg vas-msg-bad"><span class="vas-emoji">&#128161;</span> Good try! ' +
+              (wrongMsg || 'The answer is <b>' + esc(res.correct_answer) + '</b>') + '</div>';
         var label = 'Continue video &#9654;';
         if (state.mode === 'quiz' || state.ended) {
             label = nextQuestion() ? 'Next question &rarr;' : 'See my score &rarr;';
@@ -287,6 +343,116 @@
     $(document).on('click', '[data-vas="close"]', function () {
         closeOverlay();
         state.mode = 'watch';
+    });
+
+    /* ---------- drag & drop / matching interactions ---------- */
+    // Works with the mouse (HTML5 drag & drop) and with taps (tap a card, then tap a box).
+    var dragging = null;
+
+    function zoneOf(el) { return $(el).closest('[data-vas-zone]'); }
+    function hint($zone) { return $zone.find('.vas-drop-hint'); }
+
+    function placeCard($card, $zone) {
+        var $q = $card.closest('.vas-card');
+        var $pool = $q.find('[data-vas-zone="pool"]');
+        if (!$zone.length || $zone.is($card.parent())) { return; }
+        if ($zone.data('vasZone') !== 'pool') {
+            // A box holds one card: send the old one back to the pool.
+            $zone.find('.vas-dcard').not($card).appendTo($pool);
+        }
+        $card.removeClass('is-selected').appendTo($zone);
+        $q.find('[data-vas-zone]').each(function () {
+            var $z = $(this);
+            if ($z.data('vasZone') !== 'pool') { hint($z).toggle(!$z.find('.vas-dcard').length); }
+        });
+        updateChecks($q);
+    }
+
+    function updateChecks($q) {
+        var drop = $q.find('[data-vas-zone="drop"]');
+        $q.find('[data-vas="dragcheck"]').prop('disabled', !drop.find('.vas-dcard').length);
+        var slots = $q.find('[data-vas-zone="slot"]');
+        var filled = slots.filter(function () { return $(this).find('.vas-dcard').length > 0; }).length;
+        $q.find('[data-vas="matchcheck"]').prop('disabled', !slots.length || filled < slots.length);
+    }
+
+    function locked($el) { return $el.closest('.vas-card').find('.vas-feedback').children().length > 0 || (state && state.busy); }
+
+    // Tap / click
+    $(document).on('click', '.vas-dcard', function (e) {
+        if ($(e.target).closest('audio, video').length) { return; }          // using the player controls
+        var $card = $(this);
+        if (locked($card)) { return; }
+        var hasHandle = $card.find('.vas-move').length > 0;
+        if (hasHandle && !$(e.target).closest('.vas-move').length && $card.parent().data('vasZone') === 'pool') { return; }
+        var $q = $card.closest('.vas-card');
+        var $zone = $card.parent();
+
+        if ($zone.data('vasZone') !== 'pool') {                              // tap a placed card -> back to pool
+            placeCard($card, $q.find('[data-vas-zone="pool"]'));
+            return;
+        }
+        if ($q.find('[data-vas-zone="drop"]').length) {                       // drag & drop: one box
+            placeCard($card, $q.find('[data-vas-zone="drop"]'));
+            return;
+        }
+        var wasSelected = $card.hasClass('is-selected');                    // matching: select, then tap a box
+        $q.find('.vas-dcard.is-selected').removeClass('is-selected');
+        if (!wasSelected) {
+            $card.addClass('is-selected');
+            var $empty = $q.find('[data-vas-zone="slot"]').filter(function () { return !$(this).find('.vas-dcard').length; }).first();
+            $q.find('.vas-mslot').removeClass('is-target');
+            $empty.addClass('is-target');
+        }
+    });
+    $(document).on('click', '[data-vas-zone="slot"]', function (e) {
+        if ($(e.target).closest('.vas-dcard').length || locked($(this))) { return; }
+        var $sel = $(this).closest('.vas-card').find('.vas-dcard.is-selected');
+        $(this).closest('.vas-card').find('.vas-mslot').removeClass('is-target');
+        if ($sel.length) { placeCard($sel, $(this)); }
+    });
+    $(document).on('keydown', '.vas-dcard', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $(this).trigger('click'); }
+    });
+
+    // Mouse drag & drop
+    $(document).on('dragstart', '.vas-dcard', function (e) {
+        if (locked($(this))) { e.preventDefault(); return; }
+        dragging = this;
+        $(this).addClass('is-dragging');
+        var dt = e.originalEvent.dataTransfer;
+        if (dt) { dt.effectAllowed = 'move'; try { dt.setData('text/plain', 'vas'); } catch (err) {} }
+    });
+    $(document).on('dragend', '.vas-dcard', function () {
+        $(this).removeClass('is-dragging');
+        $('.vas-over').removeClass('vas-over');
+        dragging = null;
+    });
+    $(document).on('dragover', '[data-vas-zone]', function (e) {
+        if (!dragging) { return; }
+        e.preventDefault();
+        $(this).addClass('vas-over');
+    });
+    $(document).on('dragleave', '[data-vas-zone]', function () { $(this).removeClass('vas-over'); });
+    $(document).on('drop', '[data-vas-zone]', function (e) {
+        if (!dragging) { return; }
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).removeClass('vas-over');
+        placeCard($(dragging), $(this));
+    });
+
+    $(document).on('click', '[data-vas="dragcheck"]', function () {
+        var $card = $(this).closest('.vas-card').find('[data-vas-zone="drop"] .vas-dcard');
+        if ($card.length) { submitAnswer(String($card.data('index'))); }
+    });
+    $(document).on('click', '[data-vas="matchcheck"]', function () {
+        var placed = [];
+        $(this).closest('.vas-card').find('[data-vas-zone="slot"]').each(function () {
+            var $c = $(this).find('.vas-dcard');
+            placed[parseInt($(this).data('slot'), 10)] = $c.length ? parseInt($c.data('pos'), 10) : -1;
+        });
+        submitAnswer(JSON.stringify(placed));
     });
 
     /* ---------- public API ---------- */
