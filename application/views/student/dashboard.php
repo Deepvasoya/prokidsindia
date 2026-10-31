@@ -185,7 +185,11 @@
 
 						    // "My learning" numbers
 						    $sd_uid     = (int) $this->session->userdata('uid');
-						    $sd_courses = $this->db->where('student_id', $sd_uid)->count_all_results('sudent_batchs');
+						    // Same rule as the My Course page: only active batches that still exist, each counted once.
+						    $sd_courses = (int) $this->db->select('COUNT(DISTINCT sb.batch_id) AS n')
+						        ->from('sudent_batchs sb')->join('batches b', 'b.id = sb.batch_id')
+						        ->where(array('sb.student_id' => $sd_uid, 'b.status' => 1))
+						        ->get()->row()->n;
 						    $sd_quizzes = 0; $sd_stars = 0; $sd_best = null; $sd_recent = array();
 						    if ($this->db->table_exists('video_assessment_attempts')) {
 						        $sd_attempts = $this->db->select('a.video_id, a.score, a.total_marks, a.created_at, v.title')
