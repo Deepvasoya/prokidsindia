@@ -4583,7 +4583,8 @@ error_reporting(E_ALL);*/
                     $assess_total = isset($assess_counts[$vid['id']]) ? $assess_counts[$vid['id']] : 0;
                     $inline_edit .= "<a class='btn_assessment' title='Assessment (MCQ / Fill up)' href='" . base_url('admin/video-assessment/' . $vid['id']) . "'>"
                         . "<i class='fa fa-question-circle'></i> Assessment"
-                        . "<span class='assess_count" . ($assess_total ? '' : ' is-empty') . "'>" . $assess_total . "</span></a>";
+                        . "<span class='assess_count" . ($assess_total ? '' : ' is-empty') . "'>" . $assess_total . "</span></a>"
+                        . "<a class='btn_playlist' title='Add PlayList' href='" . base_url('admin/playlist-manage/' . $vid['id']) . "'><i class='fa fa-music'></i></a>";
                 }
 
                 $action = "
@@ -4591,7 +4592,6 @@ error_reporting(E_ALL);*/
                     <p class='actions_wrap'>
                         <a class='edit_video_url btn_edit' title='Edit' data-batch_id='".json_encode($vid['batch'])."' data-subject='" . $vid['subject'] . "' data-chapter='" . $vid['topic'] . "' data-table='video_lectures' data-id='" . $vid["id"] . "'><i class='fa fa-edit'></i></a>
                         <a style='display:none' class='deleteData btn_delete' title='Delete' data-id='" . $vid["id"] . "' data-table='video_lectures'><i class='fa fa-trash'></i></a>
-                        <a href='" . base_url('admin/playlist-manage/' . $vid["id"]) . "' title='Add PlayList'><i class='fa fa-music'></i></a>
                     </p>
                 ";
 

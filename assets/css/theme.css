@@ -1688,3 +1688,26 @@ body.student-panel .edu_top_header .edu_header_close { display: none; }
 .edu_dashboard_wrap .edu_quick_links_wrapper .row,
 .edu_dashboard_wrap .dasboard_links .row { justify-content: center; }
 .edu_dashboard_wrap .edu_dashboard_widgets > .row { justify-content: center; }
+
+/* Video list: playlist (music) button right after the Assessment button */
+.edu_admin_informationdiv .table td a.btn_playlist,
+.table td a.btn_playlist {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 36px !important;
+    height: 36px !important;
+    margin: 0 0 0 8px !important;
+    padding: 0 !important;
+    border-radius: 12px !important;
+    background: linear-gradient(135deg, #5b6cff, #9b7bff);
+    color: #fff !important;
+    vertical-align: middle;
+    box-shadow: 0 4px 12px rgba(91, 108, 255, .28);
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+.table td a.btn_playlist:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(91, 108, 255, .35); }
+.table td a.btn_playlist i {
+    width: auto !important; height: auto !important; line-height: 1 !important; margin: 0 !important; padding: 0 !important;
+    background: none !important; color: #fff !important; box-shadow: none !important; font-size: 15px;
+}
