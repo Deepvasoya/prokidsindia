@@ -1711,3 +1711,50 @@ body.student-panel .edu_top_header .edu_header_close { display: none; }
     width: auto !important; height: auto !important; line-height: 1 !important; margin: 0 !important; padding: 0 !important;
     background: none !important; color: #fff !important; box-shadow: none !important; font-size: 15px;
 }
+
+/* ==========================================================================
+   Student Manager: filter + bulk upload toolbar
+   ========================================================================== */
+.sm-toolbar { display: grid; gap: 18px; margin-bottom: 24px; }
+.sm-card {
+    background: #fff; border-radius: var(--pk-radius-lg); padding: 20px 22px;
+    box-shadow: var(--pk-shadow-sm); border: 1px solid var(--pk-border);
+}
+.sm-card h4 { margin: 0; font-size: 18px; color: var(--pk-ink); text-transform: none; }
+.sm-card-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.sm-filters .sm-card-head { margin-bottom: 16px; }
+.sm-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.sm-btn { display: inline-flex !important; align-items: center; gap: 6px; height: 42px; padding: 0 18px !important; margin: 0 !important; line-height: 1 !important; font-size: 14px !important; white-space: nowrap; }
+.sm-btn i { margin: 0 !important; }
+.sm-btn-ghost { background: #fff !important; color: var(--pk-primary) !important; border: 2px solid var(--pk-primary-100) !important; box-shadow: none !important; }
+.sm-btn-ghost:hover { background: var(--pk-primary-50) !important; }
+.btn-danger.sm-btn { background: var(--pk-danger) !important; border-color: var(--pk-danger) !important; color: #fff !important; }
+
+.sm-filter-row { display: grid; grid-template-columns: 1fr 1fr 2fr auto; gap: 14px; align-items: end; }
+.sm-field { min-width: 0; }
+.sm-field label { display: block; margin: 0 0 6px; font-size: 13px; font-weight: 800; color: var(--pk-muted); }
+.sm-field .form-control, .sm-field .select2-container { width: 100% !important; }
+.sm-field .select2-container .select2-selection { min-height: 44px; }
+.sm-field-btn .btn { height: 44px; min-width: 130px; margin: 0; }
+
+.sm-upload { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; background: linear-gradient(120deg, #f7f8ff, #fff8f1); }
+.sm-upload-icon { flex: 0 0 48px; height: 48px; border-radius: 14px; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: var(--pk-shadow-sm); }
+.sm-upload-body { flex: 1 1 220px; min-width: 0; }
+.sm-upload-body p { margin: 2px 0 0; padding: 0; color: var(--pk-muted); font-size: 13.5px; font-weight: 600; }
+.sm-upload-body a { color: var(--pk-primary); font-weight: 800; }
+.sm-upload-input { flex: 1 1 260px; min-width: 0; }
+.sm-upload-input input[type="file"] { width: 100%; }
+
+@media (max-width: 991px) {
+    .sm-filter-row { grid-template-columns: 1fr 1fr; }
+    .sm-field-wide { grid-column: 1 / -1; }
+    .sm-field-btn { grid-column: 1 / -1; }
+    .sm-field-btn .btn { width: 100%; }
+}
+@media (max-width: 575px) {
+    .sm-filter-row { grid-template-columns: 1fr; }
+    .sm-actions { width: 100%; }
+    .sm-actions .sm-btn { flex: 1 1 auto; justify-content: center; }
+    .sm-upload .sm-btn { width: 100%; justify-content: center; }
+}
+.sm-field-btn .btn.find_student { font-size: 14px !important; font-weight: 700; letter-spacing: .02em; }
