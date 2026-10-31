@@ -1412,6 +1412,20 @@ var csvData = [];
     });
     
     
+    // Video Lecture Manager filter -> DataTable URL.
+    // Sends a subject/chapter only when one is really selected (not the "Select ..." placeholder)
+    // and URL-encodes the names, which may contain "&" (e.g. "PHONICS - CH & SH").
+    function videoFilterUrl() {
+        var params = [];
+        var batch = $('#videoBatch').val();
+        var $subject = $('#videoSubject option:selected');
+        var $chapter = $('#videoChapter option:selected');
+        if (batch) { params.push('batch=' + encodeURIComponent(batch)); }
+        if ($subject.length && $subject.val()) { params.push('subject=' + encodeURIComponent($.trim($subject.text()))); }
+        if ($chapter.length && $chapter.val()) { params.push('chapter=' + encodeURIComponent($.trim($chapter.text()))); }
+        return base_url + $('.server_datatable').attr('data-url') + (params.length ? '?' + params.join('&') : '');
+    }
+
     $('.filter_videos').on('click', function() {
         if ($('#videoBatch').val() == '') {
             toastr.error('Please select batch');
@@ -1421,13 +1435,7 @@ var csvData = [];
             return false;
         } else {
             targetTableUrl = $('.server_datatable').attr('data-url');
-            
-            var video_batch = $('#videoBatch').val();
-            var final_subject = $("#videoSubject option:selected").text();
-            var final_chapter = $("#videoChapter option:selected").text();
-            
-           
-            dataTableObj.ajax.url(base_url + targetTableUrl + '?batch=' + video_batch + '&subject=' + final_subject + '&chapter=' + final_chapter).load();
+            dataTableObj.ajax.url(videoFilterUrl()).load();
         }
         
     });
@@ -1489,7 +1497,7 @@ var csvData = [];
 
                         if ($(".progress-bar").html('100%')) {
                             setTimeout(function() {
-                                    dataTableObj.ajax.url(base_url + targetTableUrl + '?batch=' + video_batch + '&subject=' + final_subject + '&chapter=' + final_chapter).load();
+                                    dataTableObj.ajax.url(videoFilterUrl()).load();
                                     setTimeout(function() {
                                             var subjectID = $('#subjectID').val();
                                             var chapterID = $('#chapterID').val();
@@ -1505,9 +1513,7 @@ var csvData = [];
 
                         if (no_data != undefined) {
                             setTimeout(function() {
-                                var final_subject = subject.slice(0, -14);
-                                var final_chapter = chapter.slice(0, -14);
-                                dataTableObj.ajax.url(base_url + targetTableUrl + '?batch=' + video_batch + '&subject=' + final_subject + '&chapter=' + final_chapter).load();
+                                dataTableObj.ajax.url(videoFilterUrl()).load();
                                 
                                 $('.filter_subject').val(subject).trigger('change');
                                     $('.filter_chapter').val(chapter).trigger('change');
@@ -2514,6 +2520,7 @@ var csvData = [];
                 console.log(resp);
                 if (resp['status'] == '1') {
                      $("#videoSubject").html(resp['html']);
+                     $("#videoChapter").html('<option value="">Select Chapter</option>');
                 } else {
                     toastr.error(ltr_something_msg);
                 }
@@ -2529,6 +2536,7 @@ var csvData = [];
         var subjectID = $(this).val();
         var chapterID = $("#chapterID").val();
         var batchID = $("#batchID").val();
+        $("#videoChapter").html('<option value="">Select Chapter</option>');
          if (subjectID != '') {
             getChapterByBatch(subjectID,batchID,chapterID);
         }
