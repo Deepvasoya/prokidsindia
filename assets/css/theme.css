@@ -1830,3 +1830,24 @@ body.student-panel #view_video_popup .video-content { width: 100%; }
 body.student-panel #view_video_popup .videoIframeShow video,
 body.student-panel #view_video_popup .videoIframeShow iframe { max-height: calc(100vh - 120px); }
 body.student-panel #view_video_popup .vas-panel { width: 100%; }
+/* Student video popup: tidy card for the numbered parts list */
+body.student-panel #view_video_popup .number-section {
+    flex: 0 0 200px; align-self: stretch; padding: 16px 14px; border-radius: 20px;
+    background: #f7f8fe; border: 1px solid #eceefa; text-align: center;
+}
+body.student-panel #view_video_popup .number-title { margin: 0 0 14px; }
+body.student-panel #view_video_popup .number-title .edu_sub_title { margin: 0 !important; width: 100%; font-size: 17px !important; padding: 10px 12px !important; }
+body.student-panel #view_video_popup .number-grid {
+    display: grid; grid-template-columns: repeat(2, 64px); gap: 12px; justify-content: center;
+    margin: 0 !important; max-height: calc(100vh - 260px); overflow-y: auto; padding: 2px;
+}
+body.student-panel #view_video_popup .number-item {
+    width: 64px !important; height: 48px; padding: 0 !important; margin: 0;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 16px; background-size: cover; background-position: center;
+    box-shadow: 0 3px 8px rgba(31,42,77,.12); transition: transform .15s ease;
+}
+body.student-panel #view_video_popup .number-item:hover { transform: translateY(-2px); }
+@media (max-width: 900px) {
+    body.student-panel #view_video_popup .number-grid { grid-template-columns: repeat(auto-fill, 64px); max-height: none; }
+}
