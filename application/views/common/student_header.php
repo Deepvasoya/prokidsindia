@@ -992,7 +992,7 @@ $liveClass = $latestEntry ? $latestEntry : array('type' => '', 'join_url' => '')
         </div>
    <div class="edu_page_title mr-3">      
          
-                          <a href="<?php echo base_url('student/my-course'); ?>" class="edu_admin_bar mr-3"><div class="edu_admin_btn"><i class="fa fa-book mr-1" aria-hidden="true"></i><?php echo html_escape($this->common->languageTranslator('ltr_my_course')); ?></div></a>
+                          <?php /* "My Course" button removed from the top bar (reachable from the dashboard) */ ?>
                           
                    
                 			</div>
