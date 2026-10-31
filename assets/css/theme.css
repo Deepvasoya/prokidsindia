@@ -1851,3 +1851,16 @@ body.student-panel #view_video_popup .number-item:hover { transform: translateY(
 @media (max-width: 900px) {
     body.student-panel #view_video_popup .number-grid { grid-template-columns: repeat(auto-fill, 64px); max-height: none; }
 }
+/* #videoGrid (.number-grid) gets a second .number-grid inserted by JS:
+   outer box = plain scroll container, inner box = the 2-column grid */
+body.student-panel #view_video_popup #videoGrid.number-grid {
+    display: block !important; grid-template-columns: none !important;
+    max-height: calc(100vh - 260px); overflow-x: hidden; overflow-y: auto; padding: 2px 0;
+}
+body.student-panel #view_video_popup #videoGrid .number-grid {
+    display: grid !important; grid-template-columns: repeat(2, 64px) !important; gap: 12px !important;
+    justify-content: center; margin: 0 !important; max-height: none; overflow: visible; padding: 2px;
+}
+@media (max-width: 900px) {
+    body.student-panel #view_video_popup #videoGrid .number-grid { grid-template-columns: repeat(auto-fill, 64px) !important; }
+}
