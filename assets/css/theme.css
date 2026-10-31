@@ -1823,3 +1823,10 @@ body.student-panel #view_video_popup .vas-panel { max-width: none; }
     body.student-panel #view_video_popup .video-content { flex-direction: column; }
     body.student-panel #view_video_popup .number-section { flex-basis: auto; width: 100%; }
 }
+/* use the full popup width: no shrink-to-content, video grows with the width */
+body.student-panel #view_video_popup .edu_popup_wrapper,
+body.student-panel #view_video_popup .edu_popup_inner { width: 100%; align-items: stretch; }
+body.student-panel #view_video_popup .video-content { width: 100%; }
+body.student-panel #view_video_popup .videoIframeShow video,
+body.student-panel #view_video_popup .videoIframeShow iframe { max-height: calc(100vh - 120px); }
+body.student-panel #view_video_popup .vas-panel { width: 100%; }
