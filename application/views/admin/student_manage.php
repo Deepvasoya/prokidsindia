@@ -70,7 +70,12 @@
 	                <p>Upload a filled-in copy of the <a href="student-exports">sample file</a>.</p>
 	            </div>
 	            <div class="sm-upload-input">
-	                <input type="file" name="file" required>
+	                <input type="file" name="file" id="smBulkFile" accept=".csv,.xls,.xlsx" required>
+	                <div class="sm-file-preview" id="smBulkPreview" hidden>
+	                    <span class="sm-file-icon" data-sm-icon>&#128196;</span>
+	                    <span class="sm-file-info"><strong data-sm-name></strong><small data-sm-meta></small></span>
+	                    <button type="button" class="sm-file-clear" data-sm-clear title="Remove file" aria-label="Remove file">&times;</button>
+	                </div>
 	            </div>
 	            <input type="submit" name="submit" value="Bulk Upload" class="btn btn-primary sm-btn">
 	        </form>
@@ -202,3 +207,28 @@
         </div>
     </div>
 </div>
+
+<script>
+// Bulk upload: show the chosen file (name, type, size) with a remove button.
+document.addEventListener('DOMContentLoaded', function () {
+    var input = document.getElementById('smBulkFile');
+    var box = document.getElementById('smBulkPreview');
+    if (!input || !box) { return; }
+    function size(bytes) {
+        return bytes < 1024 ? bytes + ' B' : bytes < 1048576 ? (bytes / 1024).toFixed(1) + ' KB' : (bytes / 1048576).toFixed(1) + ' MB';
+    }
+    function render() {
+        var f = input.files && input.files[0];
+        if (!f) { box.hidden = true; input.classList.remove('has-file'); return; }
+        var ext = (f.name.split('.').pop() || '').toLowerCase();
+        box.querySelector('[data-sm-icon]').innerHTML = (ext === 'xls' || ext === 'xlsx') ? '&#128215;' : '&#128196;';
+        box.querySelector('[data-sm-name]').textContent = f.name;
+        box.querySelector('[data-sm-meta]').textContent = ext.toUpperCase() + ' file \u00b7 ' + size(f.size) + ' \u00b7 ready to upload';
+        box.hidden = false;
+        input.classList.add('has-file');
+    }
+    input.addEventListener('change', render);
+    box.querySelector('[data-sm-clear]').addEventListener('click', function () { input.value = ''; render(); });
+    render();
+});
+</script>
