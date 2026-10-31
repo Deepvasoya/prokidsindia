@@ -276,7 +276,7 @@ body.va-modal-open { overflow: hidden; }
 
             <div class="va-section">
                 <label class="va-label" for="vaQText">Question</label>
-                <textarea class="form-control" id="vaQText" name="question_text" rows="2" placeholder="e.g. Which animal says 'moo'?"></textarea>
+                <input type="text" class="form-control" id="vaQText" name="question_text" maxlength="1000" autocomplete="off" placeholder="e.g. Which animal says 'moo'?">
                 <div class="va-hint">Optional when you add an image, audio or video below.</div>
             </div>
 
