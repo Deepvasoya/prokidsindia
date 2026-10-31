@@ -1808,3 +1808,33 @@ body.student-panel #view_video_popup #videoGrid .number-grid {
     background: var(--pk-primary-50); color: var(--pk-primary); font-weight: 800; cursor: pointer;
 }
 .sm-upload-input input[type="file"]:hover { border-color: var(--pk-primary); }
+
+/* Student video popup v3: bigger, and never show black side bars.
+   The video keeps its own shape (no forced 16:9 box, no black background). */
+body.student-panel #view_video_popup.edu_popup_container {
+    max-width: min(1700px, calc(100vw - 32px)) !important;
+    padding: 24px 26px 22px !important;
+}
+body.student-panel #view_video_popup .videoIframeShow {
+    background: transparent !important;
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    border-radius: 0;
+}
+body.student-panel #view_video_popup .videoIframeShow video {
+    aspect-ratio: auto !important;
+    width: auto !important;
+    height: calc(100vh - 200px) !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    object-fit: contain;
+    background: transparent !important;
+    border-radius: 16px;
+    margin: 0 auto;
+}
+/* YouTube embeds have no intrinsic size, keep them 16:9 but transparent around */
+body.student-panel #view_video_popup .videoIframeShow iframe { background: transparent !important; max-height: calc(100vh - 200px); }
+@media (max-width: 900px) {
+    body.student-panel #view_video_popup .videoIframeShow video { height: auto !important; width: 100% !important; }
+}
