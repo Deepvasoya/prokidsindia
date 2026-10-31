@@ -1805,3 +1805,21 @@ body.student-panel .edu_top_header .edu_header_close { display: none; }
     .edu_admin_content .edu_btn_wrapper.sectionHolder:has(select) .btn,
     .edu_admin_content .edu_btn_wrapper.sectionHolder:has(select) .edu_admin_btn { width: 100%; }
 }
+
+/* Student video player popup: bigger, video takes most of the width */
+body.student-panel #view_video_popup.edu_popup_container {
+    max-width: min(1400px, calc(100vw - 40px)) !important;
+    padding: 28px 30px 24px !important;
+}
+body.student-panel #view_video_popup .video-content { align-items: flex-start; gap: 24px; }
+body.student-panel #view_video_popup .video-section { flex: 1 1 auto; min-width: 0; display: block; padding: 0; }
+body.student-panel #view_video_popup .videoIframeShow video,
+body.student-panel #view_video_popup .videoIframeShow iframe { max-height: calc(100vh - 230px); }
+body.student-panel #view_video_popup .number-section { flex: 0 0 190px; padding: 0; }
+body.student-panel #view_video_popup .number-title { margin-top: 0; }
+body.student-panel #view_video_popup .number-grid { margin-left: 0; }
+body.student-panel #view_video_popup .vas-panel { max-width: none; }
+@media (max-width: 900px) {
+    body.student-panel #view_video_popup .video-content { flex-direction: column; }
+    body.student-panel #view_video_popup .number-section { flex-basis: auto; width: 100%; }
+}
