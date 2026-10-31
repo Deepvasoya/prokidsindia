@@ -66,7 +66,10 @@
         var $p = $('#vasPanel');
         if (!$p.length) {
             $p = $('<div id="vasPanel" class="vas-panel"></div>');
-            $('#view_video_popup .edu_popup_inner').append($p);
+            // Sit at the bottom of the side card (video title + part numbers) when it exists.
+            var $side = $('#view_video_popup .number-section');
+            if ($side.length) { $p.addClass('vas-panel-side').appendTo($side); }
+            else { $('#view_video_popup .edu_popup_inner').append($p); }
         }
         return $p;
     }

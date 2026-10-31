@@ -196,3 +196,19 @@ audio.vas-card-media { width: 190px; }
 .vas-mleft .vas-card-text { font-size: 20px; }
 .vas-mslot .vas-dcard { padding: 6px 10px; min-height: 0; }
 .vas-mfix-media { max-height: 40px; }
+
+/* Quiz panel inside the side card (below the part numbers) */
+#view_video_popup .number-section { display: flex; flex-direction: column; }
+.vas-panel.vas-panel-side {
+    margin-top: auto; padding: 14px 12px; gap: 10px; flex-direction: column; align-items: stretch;
+    text-align: center; border-radius: 18px;
+}
+#view_video_popup .number-section .vas-panel-side { margin-top: auto; }
+#view_video_popup .number-grid + .vas-panel-side,
+#view_video_popup #videoGrid ~ .vas-panel-side { margin-top: 16px; }
+.vas-panel-side .vas-panel-icon { flex: none; width: 42px; height: 42px; margin: 0 auto; font-size: 22px; }
+.vas-panel-side .vas-panel-body { flex: none; }
+.vas-panel-side .vas-panel-body h4 { font-size: 16px; }
+.vas-panel-side .vas-panel-body p { font-size: 12px; }
+.vas-panel-side .vas-dots { justify-content: center; }
+.vas-panel-side .vas-btn { width: 100%; min-height: 44px; padding: 0 12px; font-size: 15px; }
