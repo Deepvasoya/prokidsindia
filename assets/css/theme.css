@@ -1684,3 +1684,50 @@ body.student-panel .edu_top_header .edu_header_close { display: none; }
     .sm-upload .sm-btn { width: 100%; justify-content: center; }
 }
 .sm-field-btn .btn.find_student { font-size: 14px !important; font-weight: 700; letter-spacing: .02em; }
+
+/* ==========================================================================
+   Admin filter bars (Video, Notes, Books, Old papers, Questions, Results,
+   Live class, Payments ...): all use .edu_btn_wrapper.sectionHolder with
+   selects + buttons. Only wrappers that contain a <select> are touched.
+   ========================================================================== */
+.edu_admin_content .edu_btn_wrapper.sectionHolder:has(select) {
+    background: #fff;
+    border: 1px solid var(--pk-border);
+    border-radius: var(--pk-radius-lg);
+    box-shadow: var(--pk-shadow-sm);
+    padding: 18px 20px 4px;
+    margin-bottom: 24px;
+}
+.edu_admin_content .edu_btn_wrapper.sectionHolder:has(select) > .row,
+.edu_admin_content .edu_btn_wrapper.sectionHolder:has(select) form > .row {
+    align-items: flex-end;
+}
+.edu_admin_content .edu_btn_wrapper.sectionHolder:has(select) .form-group { margin-bottom: 14px; }
+.edu_admin_content .edu_btn_wrapper.sectionHolder:has(select) .form-group > label {
+    display: block; margin-bottom: 6px; font-size: 13px; font-weight: 800; color: var(--pk-muted);
+}
+/* same height for every control in the bar */
+.edu_admin_content .edu_btn_wrapper.sectionHolder:has(select) select.form-control,
+.edu_admin_content .edu_btn_wrapper.sectionHolder:has(select) input.form-control,
+.edu_admin_content .edu_btn_wrapper.sectionHolder:has(select) .select2-container .select2-selection--single {
+    height: 44px !important;
+}
+.edu_admin_content .edu_btn_wrapper.sectionHolder:has(select) .select2-container { width: 100% !important; }
+.edu_admin_content .edu_btn_wrapper.sectionHolder:has(select) .select2-selection--single .select2-selection__rendered { line-height: 42px !important; padding-left: 16px; }
+.edu_admin_content .edu_btn_wrapper.sectionHolder:has(select) .select2-selection--single .select2-selection__arrow { height: 42px !important; }
+.edu_admin_content .edu_btn_wrapper.sectionHolder:has(select) .select2-selection--multiple { min-height: 44px !important; }
+.edu_admin_content .edu_btn_wrapper.sectionHolder:has(select) .btn,
+.edu_admin_content .edu_btn_wrapper.sectionHolder:has(select) .edu_admin_btn {
+    display: inline-flex !important; align-items: center; justify-content: center; gap: 6px;
+    height: 44px; padding: 0 20px !important; margin: 0 !important; line-height: 1 !important;
+    white-space: nowrap; font-size: 14px;
+}
+.edu_admin_content .edu_btn_wrapper.sectionHolder:has(select) input[type="button"].btn,
+.edu_admin_content .edu_btn_wrapper.sectionHolder:has(select) input[type="submit"].btn { width: 100%; }
+.edu_admin_content .edu_btn_wrapper.sectionHolder:has(select) .btn i,
+.edu_admin_content .edu_btn_wrapper.sectionHolder:has(select) .edu_admin_btn i { margin: 0 !important; }
+@media (max-width: 767px) {
+    .edu_admin_content .edu_btn_wrapper.sectionHolder:has(select) { padding: 14px 14px 2px; }
+    .edu_admin_content .edu_btn_wrapper.sectionHolder:has(select) .btn,
+    .edu_admin_content .edu_btn_wrapper.sectionHolder:has(select) .edu_admin_btn { width: 100%; }
+}
