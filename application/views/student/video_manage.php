@@ -1281,6 +1281,7 @@ $.magnificPopup.open({
                 window.playerx = new Plyr('#player');
             }
             if (window.VAS) { VAS.start(videoId); } // quiz questions for this video
+            changeColor(document.getElementById('viewVideoTopic'));
         },
         close: function() {
             if (window.VAS) { VAS.stop(); }
@@ -1304,6 +1305,7 @@ fetchRelatedVideo(videoId);
 $('#viewVideoTopic').on('click', function() {
 const video_url = $('#viewVideoTopic').attr("video_url");
 playVideo(video_url);
+changeColor(this);
 
 });
 
@@ -1413,7 +1415,7 @@ $.ajax({
 function playVideo(videoUrl) {
     const videoContainer = document.querySelector('.videoIframeShow');
     videoContainer.innerHTML = `
-        <video style="width: 100%; background-color: coral;" controls autoplay>
+        <video controls autoplay controlsList="nodownload" playsinline>
             <source src="${videoUrl}" type="video/mp4">
             Your browser does not support the video tag.
         </video>`;
@@ -1423,9 +1425,11 @@ function playVideo(videoUrl) {
 
 // Function to change the background color
 function changeColor(element) {
-const items = document.querySelectorAll('.number-item');
-items.forEach(item => item.classList.remove('active'));
-element.classList.add('active');
+// Only one "now playing" item: the main video button or one numbered part.
+document.querySelectorAll('.number-item').forEach(item => item.classList.remove('active'));
+var main = document.getElementById('viewVideoTopic');
+if (main) { main.classList.remove('active'); }
+if (element) { element.classList.add('active'); }
 }
 
 
