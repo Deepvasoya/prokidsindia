@@ -1838,3 +1838,22 @@ body.student-panel #view_video_popup .videoIframeShow iframe { background: trans
 @media (max-width: 900px) {
     body.student-panel #view_video_popup .videoIframeShow video { height: auto !important; width: 100% !important; }
 }
+
+/* Student video popup: the video title is a button (plays the main video) */
+body.student-panel #view_video_popup .number-title .edu_sub_title#viewVideoTopic {
+    background: linear-gradient(120deg, #5b6cff, #4453e6) !important;
+    color: #fff !important;
+    cursor: pointer !important;
+    border-radius: 14px !important;
+    box-shadow: 0 6px 14px rgba(91, 108, 255, .30);
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+body.student-panel #view_video_popup #viewVideoTopic::before { content: "\25B6\00a0"; font-size: 12px; }
+body.student-panel #view_video_popup #viewVideoTopic:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(91, 108, 255, .38); }
+/* active = the one that is playing now */
+body.student-panel #view_video_popup #viewVideoTopic.active,
+body.student-panel #view_video_popup .number-item.active {
+    box-shadow: 0 0 0 4px #fff, 0 0 0 7px #ff8a3d !important;
+    transform: scale(1.04);
+}
+body.student-panel #view_video_popup .number-item.active { color: #1f2a4d !important; }
