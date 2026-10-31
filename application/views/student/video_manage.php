@@ -686,6 +686,12 @@ display: inline-block;
 #titles-section .video-info .title { margin: 0; text-align: left; font-family: var(--pk-font-head, inherit); font-size: 17px; font-weight: 600; color: #1f2a4d; }
 #titles-section #titles-container li { height: auto; font-size: 18px; background: #fff; color: #7a84a3; border-radius: 20px; }
 
+/* centre everything: banner text, units, chapters and video cards */
+.vl-head { text-align: center; }
+#subject-section .pcontainer { grid-template-columns: repeat(auto-fit, minmax(220px, 260px)); justify-content: center; }
+#topics-section .list-container ul { grid-template-columns: repeat(auto-fit, minmax(260px, 320px)); justify-content: center; }
+#titles-section .card-container { grid-template-columns: repeat(auto-fit, minmax(220px, 280px)); justify-content: center; }
+#titles-section #titles-container li { justify-content: center; }
 @media (max-width: 767px) {
     #subject-section, #topics-section, #titles-section { padding: 92px 0 30px; }
     .vl-head { padding: 20px; }
