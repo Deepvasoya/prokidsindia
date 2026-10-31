@@ -17,167 +17,65 @@
 
 
 
-	    <div class="edu_table_wrapper sectionHolder">
-			<div class="edu_admin_informationdiv">
-                <form method="post" action="" autocomplete="off">
-                    <div class="edu_manage_studer_filter"> 
-                        <div class="row">
-                            <div class="col-lg-2 col-md-4 col-sm-4 col-xs-12">
-                                <?php 
-                    			if(!empty($student_data)){
-                    			?>
-                                <div class="form-group"> 
-                                    <span>
-                                        <select style="color:black" class="form-control edu_selectbox_without_search" id="lgStatus" name="lgStatus">
-                                            <option value=""> <?php echo html_escape($this->common->languageTranslator('ltr_none'));?> </option>
-                                            <option value="1"> <?php echo html_escape($this->common->languageTranslator('ltr_login'));?> </option>
-                                            <option  value="0"><?php echo html_escape($this->common->languageTranslator('ltr_logout'));?></option>
-                                        </select>
-                                    </span>
-                                </div>
-                                <?php } ?>
-                            </div>	
-                            <div class="col-lg-2 col-md-4 col-sm-4 col-xs-12">
-                                <?php 
-                    			if(!empty($student_data) ){
-                    			?>
-                                <div class="form-group"> 
-                                    <span> 
-                                        <select  style="color:black" class="form-control edu_selectbox_without_search" id="user_status" name="user_status">
-                                            <option value=""><?php echo html_escape($this->common->languageTranslator('ltr_all'));?></option>
-                                            <option value="1"><?php echo html_escape($this->common->languageTranslator('ltr_active'));?></option>
-                                            <option  value="0"><?php echo html_escape($this->common->languageTranslator('ltr_inactive'));?></option>
-                                        </select>
-                                    </span>
-                                </div>
-                                <?php } ?>
-                            </div>
-                            <div class="col-lg-3 col-md-4 col-sm-4 col-xs-12">
-                                <?php 
-                    			if(!empty($student_data)){
-                    			?>
-                                <div class="form-group"> 
-                                    <span> 
-                                        <select  style="color:black" class="form-control edu_selectbox_without_search" id="user_batch" name="user_batch[]" multiple="multiple" data-placeholder="Select Batch">
-                                         
-                                            <?php if(!empty($batch_name)){
-                                                foreach($batch_name as $batch){
-                                                    echo '<option value="'.$batch['id'].'">'.$batch['batch_name'].'</option>';    
-                                                }
-                                            } ?>
-                                        </select>
-                                    </span>
-                                </div>
-                                <?php } ?>
-                            </div>
-                            <div class="col-lg-2 col-md-6 col-sm-6 col-xs-12">
-                                <?php 
-                    			if(!empty($student_data)){
-                    			?>
-                                <div class="form-group"> 
-                                    <span> 
-                                        <input type="button" value="<?php echo html_escape($this->common->languageTranslator('ltr_search'));?>" class="btn btn-primary find_student"> 
-                                    </span>
-                                </div>
-                                <?php } ?>
-                            </div>
-                            <div class="col-lg-1 col-md-6 col-sm-6 col-xs-12 text-sm-right">
-                                <div class="form-group">                                
-                                	  <a href="<?php echo base_url('admin/add-student');?>" class="edu_admin_btn"><i class="icofont-plus"></i><?php echo html_escape($this->common->languageTranslator('ltr_add_student'));?></a>
-                                </div>
-                            </div>
-                            
-                            
-                            
-                        </div>
-                    </div>	
-                </form>  
-                
-                
-<!--                <div class="row">-->
-<!--                    <div class="col-lg-8 col-md-6 col-sm-6 col-xs-12">-->
-<!--                        <div class="row">-->
-                            <!--<form method="post" action="student-bulk-upload" class="pxn_amin form" enctype="multipart/form-data" autocomplete="off">-->
-                            <!--    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">-->
-                            <!--        <div class="form-group"> -->
-                            <!--            <label style="color:black">Bulk Upload</label>-->
-                            <!--            <input style="color:black" type="file" name="file" required>-->
-                            <!--        </div>-->
-                                
-                            <!--    </div>-->
-                                
-                            <!--    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">-->
-                            <!--        <div class="form-group"> -->
-                            <!--            <input type="submit" name="submit" value="Bulk Upload" class="btn btn-primary">-->
-                            <!--        </div>-->
-                            <!--    </div>-->
-                                
-                            <!--</form>-->
-                            
-<!--                        </div>-->
-<!--                         <div class="col-lg-4 col-md-6 col-sm-6 col-xs-12">-->
-<!--                        <div class="form-group">-->
-<!--                        <a href="student-exports" class="btn btn-primary">Sample Export</a>-->
-<!--                        </div>-->
-<!--                    </div>-->
-                    
-<!--                    <button id="exportCSVButton" style="background: #007bff; color: white; padding: 10px; border: none; border-radius: 5px;">-->
-<!--    Export All-->
-<!--</button>-->
-<!--                    </div>-->
-                    
-                   
-                    
-<!--                </div>-->
+	    <?php $sm_has_students = !empty($student_data); ?>
+	    <div class="sm-toolbar">
+	        <form method="post" action="" autocomplete="off" class="sm-card sm-filters">
+	            <div class="sm-card-head">
+	                <h4>&#128269; Find students</h4>
+	                <div class="sm-actions">
+	                    <a href="<?php echo base_url('admin/add-student');?>" class="edu_admin_btn sm-btn"><i class="icofont-plus"></i><?php echo html_escape($this->common->languageTranslator('ltr_add_student'));?></a>
+	                    <button type="button" id="exportCSVButton" class="btn btn-danger sm-btn">&#11015; Export All</button>
+	                    <a href="student-exports" class="btn sm-btn sm-btn-ghost" title="Download the sample file for bulk upload">&#128196; Sample file</a>
+	                </div>
+	            </div>
+	            <?php if ($sm_has_students) { ?>
+	            <div class="sm-filter-row edu_manage_studer_filter">
+	                <div class="sm-field">
+	                    <label for="lgStatus">Login status</label>
+	                    <select class="form-control edu_selectbox_without_search" id="lgStatus" name="lgStatus">
+	                        <option value=""><?php echo html_escape($this->common->languageTranslator('ltr_none'));?></option>
+	                        <option value="1"><?php echo html_escape($this->common->languageTranslator('ltr_login'));?></option>
+	                        <option value="0"><?php echo html_escape($this->common->languageTranslator('ltr_logout'));?></option>
+	                    </select>
+	                </div>
+	                <div class="sm-field">
+	                    <label for="user_status">Status</label>
+	                    <select class="form-control edu_selectbox_without_search" id="user_status" name="user_status">
+	                        <option value=""><?php echo html_escape($this->common->languageTranslator('ltr_all'));?></option>
+	                        <option value="1"><?php echo html_escape($this->common->languageTranslator('ltr_active'));?></option>
+	                        <option value="0"><?php echo html_escape($this->common->languageTranslator('ltr_inactive'));?></option>
+	                    </select>
+	                </div>
+	                <div class="sm-field sm-field-wide">
+	                    <label for="user_batch">Batch</label>
+	                    <select class="form-control edu_selectbox_without_search" id="user_batch" name="user_batch[]" multiple="multiple" data-placeholder="Select Batch">
+	                        <?php if(!empty($batch_name)){
+	                            foreach($batch_name as $batch){
+	                                echo '<option value="'.$batch['id'].'">'.$batch['batch_name'].'</option>';
+	                            }
+	                        } ?>
+	                    </select>
+	                </div>
+	                <div class="sm-field sm-field-btn">
+	                    <input type="button" value="<?php echo html_escape($this->common->languageTranslator('ltr_search'));?>" class="btn btn-primary find_student">
+	                </div>
+	            </div>
+	            <?php } ?>
+	        </form>
 
-<div class="row align-items-center">
-    <!-- Bulk Upload Form -->
-    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
-                                <form method="post" action="student-bulk-upload" class="pxn_amin form" enctype="multipart/form-data" autocomplete="off">
-                                <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
-                                    <div class="form-group"> 
-                                        <label style="color:black">Bulk Upload</label>
-                                        <input style="color:black" type="file" name="file" required>
-                                    </div>
-                                
-                                </div>
-                                
-                                <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
-                                    <div class="form-group"> 
-                                        <input type="submit" name="submit" value="Bulk Upload" class="btn btn-primary">
-                                    </div>
-                                </div>
-                                
-                            </form>
-    </div>
+	        <form method="post" action="student-bulk-upload" class="sm-card sm-upload pxn_amin form" enctype="multipart/form-data" autocomplete="off">
+	            <div class="sm-upload-icon">&#128228;</div>
+	            <div class="sm-upload-body">
+	                <h4>Bulk upload students</h4>
+	                <p>Upload a filled-in copy of the <a href="student-exports">sample file</a>.</p>
+	            </div>
+	            <div class="sm-upload-input">
+	                <input type="file" name="file" required>
+	            </div>
+	            <input type="submit" name="submit" value="Bulk Upload" class="btn btn-primary sm-btn">
+	        </form>
+	    </div>
 
-    <!-- Sample Export Button -->
-    <!--<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">-->
-    <!--    <div class="form-group">-->
-    <!--        <a href="student-exports" class="btn btn-primary ">Sample Export</a>-->
-    <!--    </div>-->
-    <!--</div>-->
- <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
-    <div class="form-group" style="margin-left: 35%;">
-        <a href="student-exports" class="btn btn-primary">Sample Export</a>
-    </div>
-</div>
-
-
-
-    <!-- Export All Button -->
-    <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
-        <div class="form-group">
-            <button id="exportCSVButton" class="btn btn-danger">Export All</button>
-        </div>
-    </div>
-</div>
-
-
-                            
-			</div>
-		</div>
-		
 		<div class="createDivWrapper edu_add_question create_ppr_popup stdn_mng hide">
     		<div class="edu_admin_informationdiv sectionHolder">
     		    <div class="ppr_popup_inner student_mng_m">
