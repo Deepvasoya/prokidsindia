@@ -1864,3 +1864,21 @@ body.student-panel #view_video_popup #videoGrid .number-grid {
 @media (max-width: 900px) {
     body.student-panel #view_video_popup #videoGrid .number-grid { grid-template-columns: repeat(auto-fill, 64px) !important; }
 }
+
+/* Student Manager bulk upload: drop the global "Select your file" overlay
+   (backend.css input[type=file]:before) so the chosen file name is visible */
+.sm-upload-input input[type="file"] {
+    height: auto; min-height: 46px; padding: 6px 8px !important; overflow: visible;
+    border: 2px dashed #c9cff5; border-radius: 14px; background: #fff;
+    font-size: 14px; font-weight: 600; color: var(--pk-ink); cursor: pointer;
+}
+.sm-upload-input input[type="file"]::before { content: none !important; display: none !important; }
+.sm-upload-input input[type="file"]::file-selector-button {
+    margin-right: 12px; padding: 8px 16px; border: 0; border-radius: 999px;
+    background: var(--pk-primary-50); color: var(--pk-primary); font-weight: 800; cursor: pointer;
+}
+.sm-upload-input input[type="file"]::-webkit-file-upload-button {
+    margin-right: 12px; padding: 8px 16px; border: 0; border-radius: 999px;
+    background: var(--pk-primary-50); color: var(--pk-primary); font-weight: 800; cursor: pointer;
+}
+.sm-upload-input input[type="file"]:hover { border-color: var(--pk-primary); }
