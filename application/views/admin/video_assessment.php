@@ -267,10 +267,10 @@ body.va-modal-open { overflow: hidden; }
             <div class="va-section">
                 <span class="va-label">Question type</span>
                 <div class="va-seg va-typecards">
-                    <label><input type="radio" name="question_type" value="mcq" checked><span>&#9989; Multiple Choice (MCQ)<small>3 or 4 options - text, picture, audio or video</small></span></label>
-                    <label><input type="radio" name="question_type" value="fill"><span>&#9997;&#65039; Fill up / Type answer<small>Student types the answer</small></span></label>
-                    <label><input type="radio" name="question_type" value="drag"><span>&#9995; Drag &amp; Drop<small>Drag the correct card into the box</small></span></label>
-                    <label><input type="radio" name="question_type" value="match"><span>&#128279; Matching<small>Match words, pictures, sounds or videos (2-4 pairs)</small></span></label>
+                    <label><input type="radio" name="question_type" value="mcq" checked><span>&#9989; Multiple Choice (MCQ)</span></label>
+                    <label><input type="radio" name="question_type" value="fill"><span>&#9997;&#65039; Fill up / Type answer</span></label>
+                    <label><input type="radio" name="question_type" value="drag"><span>&#9995; Drag &amp; Drop</span></label>
+                    <label><input type="radio" name="question_type" value="match"><span>&#128279; Matching</span></label>
                 </div>
             </div>
 
