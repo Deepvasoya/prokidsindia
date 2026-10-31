@@ -204,8 +204,7 @@ audio.vas-card-media { width: 190px; }
     text-align: center; border-radius: 18px;
 }
 #view_video_popup .number-section .vas-panel-side { margin-top: auto; }
-#view_video_popup .number-grid + .vas-panel-side,
-#view_video_popup #videoGrid ~ .vas-panel-side { margin-top: 16px; }
+#view_video_popup #videoGrid { margin-bottom: 16px; } /* keeps a gap above the quiz panel */
 .vas-panel-side .vas-panel-icon { flex: none; width: 42px; height: 42px; margin: 0 auto; font-size: 22px; }
 .vas-panel-side .vas-panel-body { flex: none; }
 .vas-panel-side .vas-panel-body h4 { font-size: 16px; }
