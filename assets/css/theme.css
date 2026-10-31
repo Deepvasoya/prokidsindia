@@ -1681,3 +1681,10 @@ body.student-panel .edu_top_header,
 body.student-panel.edu_header_closed .edu_top_header { margin-left: 0 !important; }
 body.student-panel .edu_admin_footer { left: 0 !important; }
 body.student-panel .edu_top_header .edu_header_close { display: none; }
+
+/* Admin dashboard: centre the quick links block, its title and the stat cards */
+.edu_dashboard_wrap .dasboard_links .edu_title { justify-content: center; }
+.edu_dashboard_wrap .edu_quick_links_wrapper .custom_container { margin-left: auto; margin-right: auto; }
+.edu_dashboard_wrap .edu_quick_links_wrapper .row,
+.edu_dashboard_wrap .dasboard_links .row { justify-content: center; }
+.edu_dashboard_wrap .edu_dashboard_widgets > .row { justify-content: center; }
