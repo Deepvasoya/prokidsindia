@@ -92,10 +92,17 @@
 /* Modal */
 .va-modal { position: fixed; inset: 0; z-index: 1080; display: none; align-items: flex-start; justify-content: center; padding: 30px 16px; background: rgba(15,23,42,.55); overflow-y: auto; }
 .va-modal.open { display: flex; }
-.va-dialog { background: #fff; border-radius: 24px; width: 100%; max-width: 860px; padding: 26px 28px; position: relative; box-shadow: 0 30px 70px rgba(15,23,42,.3); }
+.va-dialog { background: #fff; border-radius: 24px; width: 100%; max-width: min(1200px, calc(100vw - 32px)); padding: 30px 36px; position: relative; box-shadow: 0 30px 70px rgba(15,23,42,.3); }
 .va-close { position: absolute; top: 16px; right: 16px; width: 38px; height: 38px; border-radius: 50%; border: 0; background: #f1f3fb; font-size: 22px; line-height: 1; cursor: pointer; }
 .va-close:hover { background: #ff4d6d; color: #fff; }
 .va-dialog h3 { margin: 0 0 20px; font-size: 22px; }
+@media (min-width: 1100px) {
+    /* use the extra width: options and matching pairs two per row */
+    #vaMcq .va-section:has(.va-optrow) { display: grid; grid-template-columns: 1fr 1fr; column-gap: 14px; }
+    #vaMcq .va-section:has(.va-optrow) > .va-label,
+    #vaMcq .va-section:has(.va-optrow) > .va-hint { grid-column: 1 / -1; }
+    .va-dialog h3 { font-size: 24px; }
+}
 .va-label { display: block; font-weight: 800; font-size: 14px; margin-bottom: 8px; color: #3f4a6b; }
 .va-section { margin-bottom: 20px; }
 .va-seg { display: flex; flex-wrap: wrap; gap: 8px; }
