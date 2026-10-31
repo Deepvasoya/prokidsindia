@@ -70,7 +70,7 @@
 	                <p>Upload a filled-in copy of the <a href="student-exports">sample file</a>.</p>
 	            </div>
 	            <div class="sm-upload-input">
-	                <input type="file" name="file" id="smBulkFile" accept=".csv,.xls,.xlsx" required>
+	                <input type="file" name="file" id="smBulkFile" accept=".csv,text/csv" required>
 	                <div class="sm-file-preview" id="smBulkPreview" hidden>
 	                    <span class="sm-file-icon" data-sm-icon>&#128196;</span>
 	                    <span class="sm-file-info"><strong data-sm-name></strong><small data-sm-meta></small></span>
@@ -223,7 +223,11 @@ document.addEventListener('DOMContentLoaded', function () {
         var ext = (f.name.split('.').pop() || '').toLowerCase();
         box.querySelector('[data-sm-icon]').innerHTML = (ext === 'xls' || ext === 'xlsx') ? '&#128215;' : '&#128196;';
         box.querySelector('[data-sm-name]').textContent = f.name;
-        box.querySelector('[data-sm-meta]').textContent = ext.toUpperCase() + ' file \u00b7 ' + size(f.size) + ' \u00b7 ready to upload';
+        var ok = ext === 'csv';
+        box.querySelector('[data-sm-meta]').textContent = ok
+            ? 'CSV file \u00b7 ' + size(f.size) + ' \u00b7 ready to upload'
+            : ext.toUpperCase() + ' file \u00b7 only CSV files can be uploaded (save it as CSV first)';
+        box.classList.toggle('is-bad', !ok);
         box.hidden = false;
         input.classList.add('has-file');
     }
