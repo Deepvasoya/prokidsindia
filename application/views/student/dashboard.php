@@ -130,6 +130,11 @@
 .sd-empty span { font-size: 30px; }
 .sd-empty p { margin: 0; padding: 0; color: #8a6a00; font-weight: 700; }
 
+/* centre the section titles, tiles and recent quizzes */
+.sd-section-title { justify-content: center; }
+.sd-tiles { grid-template-columns: repeat(auto-fit, minmax(300px, 380px)); justify-content: center; }
+.sd-recent { grid-template-columns: repeat(auto-fit, minmax(300px, 380px)); justify-content: center; }
+.sd-empty { justify-content: center; text-align: center; max-width: 760px; margin-left: auto; margin-right: auto; }
 @media (max-width: 1100px) { .sd-stats { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 767px) {
     .sd-stats { margin: -4px 0 24px; gap: 12px; }
