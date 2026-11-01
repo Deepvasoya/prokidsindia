@@ -155,7 +155,7 @@
                                                 </g>
                                             </g>
                                         </svg>
-                                        <?php echo html_escape($this->common->languageTranslator('ltr_video_lecture')); ?>
+                                        Content Manager
                                     </a>
                                 </div>
 
