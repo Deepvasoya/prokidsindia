@@ -1950,3 +1950,6 @@ body.student-panel #view_video_popup .number-item.active { color: #1f2a4d !impor
 .sm-upload-input input[type="file"].has-file { border-color: #22c58b; }
 .sm-file-preview.is-bad { background: #fff1f5; border-color: #ffc9d9; }
 .sm-file-preview.is-bad small { color: #c22a5a; }
+
+/* Select2 dropdowns: show the whole list (no 200px limit with inner scrollbar) */
+.select2-container--default .select2-results > .select2-results__options { max-height: none !important; }
