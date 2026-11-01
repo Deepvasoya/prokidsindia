@@ -145,7 +145,7 @@ body.va-modal-open { overflow: hidden; }
 
 <section class="edu_admin_content">
 <div class="va-wrap">
-    <a class="va-back" href="<?php echo $back_url; ?>">&larr; Back to Video Lecture Manager</a>
+    <a class="va-back" href="<?php echo $back_url; ?>">&larr; Back to Content Manager</a>
 
     <div class="va-hero">
         <div class="va-hero-video">
