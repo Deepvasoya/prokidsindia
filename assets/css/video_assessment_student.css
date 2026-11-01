@@ -294,3 +294,18 @@ audio.vas-card-media { width: 190px; }
 .vas-level-btn.is-locked { background: #e6e8f2; color: #7a84a3; cursor: not-allowed; box-shadow: none; }
 .vas-panel-side .vas-level { flex-direction: column; align-items: stretch; }
 .vas-panel-side .vas-level-btn { width: 100%; }
+
+/* Share my score */
+.vas-score .vas-btn-share { margin-top: 12px; background: linear-gradient(135deg, #ff8a3d, #ff5c8a); color: #fff; border: 0; }
+.vas-share { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding: 4px 0; }
+.vas-share h3 { margin: 0; font-size: 22px; color: #1f2a4d; }
+.vas-share-img { width: min(280px, 70%); height: auto; border-radius: 16px; box-shadow: 0 10px 28px rgba(31, 42, 77, .18); }
+.vas-share-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; width: 100%; max-width: 460px; }
+.vas-share-btn { min-height: 44px; border-radius: 12px; border: 2px solid #e6e8f2; background: #fff; color: #1f2a4d; font-weight: 700; font-size: 14px; cursor: pointer; }
+.vas-share-btn:hover { transform: translateY(-1px); border-color: #c7cdf0; }
+.vas-share-btn.is-native { background: #5b6cff; border-color: #5b6cff; color: #fff; }
+.vas-share-btn.is-wa { background: #25d366; border-color: #25d366; color: #fff; }
+.vas-share-btn.is-ig { background: linear-gradient(45deg, #f9a825, #e1306c, #833ab4); border: 0; color: #fff; }
+.vas-share-btn.is-fb { background: #1877f2; border-color: #1877f2; color: #fff; }
+.vas-share-msg { min-height: 18px; margin: 0; font-size: 13px; font-weight: 700; color: #11865c; }
+@media (max-width: 480px) { .vas-share-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

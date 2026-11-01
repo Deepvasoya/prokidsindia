@@ -205,10 +205,27 @@ class Student_assessment extends CI_Controller {
         $score = round($score, 2);
         return $this->json(1, '', array(
             'score' => $score, 'total_marks' => $total, 'correct_count' => $right, 'question_count' => count($questions),
+            'share' => $this->share_info($video, isset($found) && $found ? $found['name'] : ''),
         ));
     }
 
     /* ------------------------------------------------------------------ helpers */
+
+    /** Details shown on the student's "share my score" card. */
+    private function share_info($video, $level) {
+        $student = $this->db->select('name, student_state, student_city')->where('id', $this->student_id)
+                            ->get('students')->row_array();
+        $batch = $this->db->select('batch_name')->where('id', $video['batch'])->get('batches')->row_array();
+        $lecture = $this->db->select('title')->where('id', $video['id'])->get('video_lectures')->row_array();
+        return array(
+            'name'   => $student ? trim($student['name']) : '',
+            'school' => $student ? trim((string) $student['student_state']) : '',
+            'city'   => $student ? trim((string) $student['student_city']) : '',
+            'class'  => $batch ? trim($batch['batch_name']) : '',
+            'video'  => $lecture ? trim($lecture['title']) : '',
+            'level'  => (string) $level,
+        );
+    }
 
     /** A video the logged-in student may watch (one of their batches). */
     private function get_video($video_id) {

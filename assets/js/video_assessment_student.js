@@ -431,6 +431,7 @@
             .done(function (res) {
                 if (!res || res.status != 1) { return $card.html('<div class="vas-score"><h3>' + esc((res && res.msg) || 'Could not save your score.') + '</h3><button type="button" class="vas-btn" data-vas="close">Close</button></div>'); }
                 state.last = res;
+                state.lastLevel = state.sets.length ? (setById(state.activeSet) || {}).name || '' : '';
                 var pct = res.total_marks > 0 ? res.score / res.total_marks : 0;
                 var stars = pct >= 0.9 ? 3 : (pct >= 0.6 ? 2 : (pct > 0 ? 1 : 0));
                 var starHtml = '';
@@ -446,6 +447,7 @@
                             '<button type="button" class="vas-btn vas-btn-ghost" data-vas="retry">&#8635; Try again</button>' +
                             '<span data-vas-next><button type="button" class="vas-btn vas-btn-main" data-vas="close">Done</button></span>' +
                         '</div>' +
+                        '<button type="button" class="vas-btn vas-btn-share" data-vas="share">&#128228; Share my score</button>' +
                     '</div>'
                 );
                 if (state.sets.length) {
@@ -514,6 +516,161 @@
     $(document).on('click', '[data-vas="close"]', function () {
         closeOverlay();
         state.mode = 'watch';
+    });
+
+    /* ---------- share my score ---------- */
+    function shareText() {
+        var r = state.last, d = r.share || {};
+        var who = d.name || 'I';
+        var from = [d.school, d.city].filter(Boolean).join(', ');
+        return '🌟 ' + who + (from ? ' from ' + from : '') + (d.class ? ' (' + d.class + ')' : '') +
+            ' scored ' + num(r.score) + '/' + num(r.total_marks) +
+            ' in the ' + (d.video ? '"' + d.video + '" ' : '') + 'quiz' + (d.level ? ' – ' + d.level : '') +
+            ' on ProKids India! 🎉';
+    }
+    function siteUrl() {
+        var a = document.createElement('a'); a.href = base_url; return a.protocol + '//' + a.host + '/';
+    }
+    function wrapLines(ctx, text, maxWidth) {
+        var words = String(text).split(' '), lines = [], line = '';
+        $.each(words, function (i, w) {
+            var test = line ? line + ' ' + w : w;
+            if (ctx.measureText(test).width > maxWidth && line) { lines.push(line); line = w; } else { line = test; }
+        });
+        if (line) { lines.push(line); }
+        return lines;
+    }
+    function roundRect(ctx, x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+    }
+    /** Draws a 1080x1350 picture card (good for Instagram, WhatsApp status and Facebook). */
+    function drawShareCard() {
+        var r = state.last, d = r.share || {};
+        var W = 1080, H = 1350, font = '"Fredoka", "Nunito", "Segoe UI", Arial, sans-serif';
+        var c = document.createElement('canvas'); c.width = W; c.height = H;
+        var ctx = c.getContext('2d');
+        var bg = ctx.createLinearGradient(0, 0, W, H);
+        bg.addColorStop(0, '#5b6cff'); bg.addColorStop(0.55, '#8b5cf6'); bg.addColorStop(1, '#ff5c8a');
+        ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+        // confetti dots
+        var colors = ['#ffd84d', '#4ee0a8', '#ffffff', '#ff9f43', '#7dd3fc'];
+        for (var i = 0; i < 60; i++) {
+            ctx.globalAlpha = 0.35; ctx.fillStyle = colors[i % colors.length];
+            ctx.beginPath(); ctx.arc((i * 197) % W, (i * 331) % H, 6 + (i % 5) * 3, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        // white card
+        ctx.fillStyle = '#ffffff'; roundRect(ctx, 70, 150, W - 140, H - 300, 48); ctx.fill();
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#ffffff'; ctx.font = '700 54px ' + font; ctx.fillText('ProKids India', W / 2, 105);
+
+        var pct = r.total_marks > 0 ? r.score / r.total_marks : 0;
+        var stars = pct >= 0.9 ? 3 : (pct >= 0.6 ? 2 : (pct > 0 ? 1 : 0));
+        ctx.font = '110px ' + font;
+        for (var s = 0; s < 3; s++) { ctx.fillStyle = s < stars ? '#ffc93c' : '#e6e8f2'; ctx.fillText('★', W / 2 + (s - 1) * 130, 330); }
+        ctx.fillStyle = '#1f2a4d'; ctx.font = '700 64px ' + font;
+        ctx.fillText(stars === 3 ? 'Amazing!' : (stars === 2 ? 'Well done!' : 'Great try!'), W / 2, 430);
+        ctx.fillStyle = '#5b6cff'; ctx.font = '800 170px ' + font;
+        ctx.fillText(num(r.score) + ' / ' + num(r.total_marks), W / 2, 610);
+        ctx.fillStyle = '#7a84a3'; ctx.font = '600 36px ' + font;
+        ctx.fillText(r.correct_count + ' of ' + r.question_count + ' answers correct', W / 2, 670);
+
+        var y = 780;
+        ctx.fillStyle = '#1f2a4d'; ctx.font = '700 60px ' + font;
+        $.each(wrapLines(ctx, d.name || 'Student', W - 240).slice(0, 2), function (i, l) { ctx.fillText(l, W / 2, y); y += 70; });
+        ctx.font = '600 38px ' + font; ctx.fillStyle = '#4b5577';
+        $.each([d.school, d.city, d.class ? 'Class: ' + d.class : ''], function (i, t) {
+            if (!t) { return; }
+            $.each(wrapLines(ctx, t, W - 240).slice(0, 2), function (j, l) { ctx.fillText(l, W / 2, y); y += 50; });
+        });
+        if (d.video || d.level) {
+            y += 20;
+            var quiz = (d.video ? d.video : 'Quiz') + (d.level ? ' • ' + d.level : '');
+            ctx.font = '700 36px ' + font;
+            var lines = wrapLines(ctx, '📚 ' + quiz, W - 300).slice(0, 2);
+            var boxH = lines.length * 48 + 36, boxY = Math.min(y - 40, H - 170 - boxH);
+            ctx.fillStyle = '#fff3e0'; roundRect(ctx, 150, boxY, W - 300, boxH, 28); ctx.fill();
+            ctx.fillStyle = '#e8590c';
+            $.each(lines, function (i, l) { ctx.fillText(l, W / 2, boxY + 58 + i * 48); });
+        }
+        ctx.fillStyle = '#ffffff'; ctx.font = '600 34px ' + font;
+        ctx.fillText(new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) + '  •  ' + siteUrl().replace(/^https?:\/\//, '').replace(/\/$/, ''), W / 2, H - 70);
+        return c;
+    }
+    function shareStatus(msg) { overlay().find('[data-vas-share-msg]').text(msg); }
+    function downloadCard() {
+        var a = document.createElement('a');
+        a.href = state.shareImage; a.download = 'my-quiz-score.png';
+        document.body.appendChild(a); a.click(); a.remove();
+    }
+    function openShare() {
+        var $card = overlay().find('.vas-card');
+        var go = function () {
+            var canvas = drawShareCard();
+            state.shareImage = canvas.toDataURL('image/png');
+            canvas.toBlob(function (blob) { state.shareBlob = blob; });
+            $card.find('.vas-score').hide();
+            $card.find('.vas-share').remove();
+            $card.append(
+                '<div class="vas-share">' +
+                    '<h3>Share your score &#127881;</h3>' +
+                    '<img class="vas-share-img" src="' + state.shareImage + '" alt="My quiz score card">' +
+                    '<div class="vas-share-grid">' +
+                        '<button type="button" class="vas-share-btn is-native" data-vas-share="native">&#128228; Share</button>' +
+                        '<button type="button" class="vas-share-btn is-wa" data-vas-share="whatsapp">WhatsApp</button>' +
+                        '<button type="button" class="vas-share-btn is-ig" data-vas-share="instagram">Instagram</button>' +
+                        '<button type="button" class="vas-share-btn is-fb" data-vas-share="facebook">Facebook</button>' +
+                        '<button type="button" class="vas-share-btn" data-vas-share="download">&#11015; Save image</button>' +
+                        '<button type="button" class="vas-share-btn" data-vas-share="copy">&#128203; Copy text</button>' +
+                    '</div>' +
+                    '<p class="vas-share-msg" data-vas-share-msg></p>' +
+                    '<button type="button" class="vas-btn vas-btn-ghost" data-vas="share-back">&larr; Back</button>' +
+                '</div>'
+            );
+        };
+        if (document.fonts && document.fonts.ready) { document.fonts.ready.then(go); } else { go(); }
+    }
+    function nativeShare(onFail) {
+        var text = shareText();
+        if (navigator.share && state.shareBlob && window.File) {
+            var file = new File([state.shareBlob], 'my-quiz-score.png', { type: 'image/png' });
+            if (!navigator.canShare || navigator.canShare({ files: [file] })) {
+                return navigator.share({ files: [file], text: text, title: 'My quiz score' }).catch(function () {});
+            }
+        }
+        if (navigator.share) { return navigator.share({ text: text, url: siteUrl(), title: 'My quiz score' }).catch(function () {}); }
+        onFail();
+    }
+    $(document).on('click', '[data-vas="share"]', function () { if (state && state.last) { openShare(); } });
+    $(document).on('click', '[data-vas="share-back"]', function () {
+        var $card = overlay().find('.vas-card');
+        $card.find('.vas-share').remove();
+        $card.find('.vas-score').show();
+    });
+    $(document).on('click', '[data-vas-share]', function () {
+        if (!state || !state.last) { return; }
+        var kind = $(this).data('vas-share'), text = shareText(), url = siteUrl();
+        if (kind === 'native') {
+            nativeShare(function () { downloadCard(); shareStatus('Image saved. Post it on any app you like!'); });
+        } else if (kind === 'whatsapp') {
+            window.open('https://wa.me/?text=' + encodeURIComponent(text + ' ' + url), '_blank');
+        } else if (kind === 'facebook') {
+            window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url) + '&quote=' + encodeURIComponent(text), '_blank');
+        } else if (kind === 'instagram') {
+            // Instagram has no web share link: use the phone's share sheet, or save the image to post it.
+            nativeShare(function () { downloadCard(); shareStatus('Image saved! Open Instagram and add it to your post or story.'); });
+        } else if (kind === 'download') {
+            downloadCard(); shareStatus('Image saved!');
+        } else if (kind === 'copy') {
+            var done = function () { shareStatus('Text copied! Paste it anywhere.'); };
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text + ' ' + url).then(done, function () { window.prompt('Copy this text:', text + ' ' + url); });
+            } else {
+                window.prompt('Copy this text:', text + ' ' + url);
+            }
+        }
     });
 
     /* ---------- drag & drop / matching interactions ---------- */
