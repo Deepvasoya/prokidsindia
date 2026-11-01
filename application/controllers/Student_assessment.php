@@ -60,6 +60,7 @@ class Student_assessment extends CI_Controller {
             $questions[] = $extra + array(
                 'id'          => (int) $q['id'],
                 'type'        => $q['question_type'],
+                'group'       => isset($q['question_group']) ? (string) $q['question_group'] : '',
                 'text'        => (string) $q['question_text'],
                 'media_type'  => $q['question_media_type'],
                 'media'       => $q['question_media'] ? base_url($q['question_media']) : '',

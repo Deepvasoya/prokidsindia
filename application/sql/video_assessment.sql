@@ -51,3 +51,6 @@ CREATE TABLE IF NOT EXISTS `video_assessment_intro` (
   `updated_at`   DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`video_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Question groups / labels (e.g. Basic, Advanced). Run once; skip if the column already exists.
+ALTER TABLE `video_assessment_questions` ADD COLUMN `question_group` VARCHAR(60) NULL DEFAULT NULL AFTER `question_type`;

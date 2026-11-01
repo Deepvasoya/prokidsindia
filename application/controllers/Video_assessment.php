@@ -59,6 +59,7 @@ class Video_assessment extends CI_Controller {
         $data['video']     = $video;
         $data['questions'] = $this->get_questions($video['id']);
         $data['intro']     = $this->get_intro($video['id']);
+        $data['groups']    = $this->known_groups();
         $data['batch_name'] = '';
         $batch = $this->db_model->select_data('batch_name', 'batches', array('id' => $video['batch']), 1);
         if (!empty($batch)) {
@@ -152,6 +153,11 @@ class Video_assessment extends CI_Controller {
             'correct_option'      => NULL,
             'answers'             => NULL,
         );
+        // Optional group / label (e.g. Basic, Advanced); needs the question_group column.
+        if ($this->db->field_exists('question_group', self::TABLE)) {
+            $group = isset($post['question_group']) ? trim(preg_replace('/\s+/', ' ', $post['question_group'])) : '';
+            $row['question_group'] = $group === '' ? NULL : mb_substr($group, 0, 60);
+        }
 
         if ($type === 'mcq' || $type === 'drag') {
             // "drag" (drag & drop selection) stores options exactly like an MCQ.
@@ -369,6 +375,20 @@ class Video_assessment extends CI_Controller {
                         ->where(array('id' => $video_id, 'admin_id' => $this->owner_id))
                         ->get('video_lectures')->row_array();
         return $row ?: NULL;
+    }
+
+    /** Labels used so far by this admin, plus the defaults, for the group suggestions. */
+    private function known_groups() {
+        $groups = array('Basic', 'Advanced');
+        if ($this->db->field_exists('question_group', self::TABLE)) {
+            $rows = $this->db->distinct()->select('question_group')->where('admin_id', $this->owner_id)
+                             ->where('question_group IS NOT NULL', NULL, FALSE)->order_by('question_group', 'asc')
+                             ->get(self::TABLE)->result_array();
+            foreach ($rows as $r) {
+                if (!in_array($r['question_group'], $groups, TRUE)) { $groups[] = $r['question_group']; }
+            }
+        }
+        return $groups;
     }
 
     private function get_intro($video_id) {

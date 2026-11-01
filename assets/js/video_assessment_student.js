@@ -201,6 +201,7 @@
 
         overlay().find('.vas-card').html(
             '<div class="vas-card-top"><span class="vas-step">Question ' + index + ' of ' + state.questions.length + '</span>' +
+            (q.group ? '<span class="vas-group">' + esc(q.group) + '</span>' : '') +
             '<span class="vas-marks">' + num(q.marks) + ' mark' + (q.marks == 1 ? '' : 's') + '</span></div>' +
             (q.text ? '<h3 class="vas-q">' + esc(q.text) + '</h3>' : '') +
             (q.media ? '<div class="vas-q-media vas-q-media-' + q.media_type + '">' + media(q.media_type, q.media) + '</div>' : '') +

@@ -264,3 +264,7 @@ audio.vas-card-media { width: 190px; }
 .vas-intro-meta { display: inline-block; padding: 6px 14px; border-radius: 999px; background: #fff3dc; color: #b4610a; font-weight: 800; font-size: 14px; }
 .vas-intro + .vas-actions { justify-content: center; }
 .vas-intro + .vas-actions .vas-btn { min-width: 220px; }
+
+/* Question group label (e.g. Basic / Advanced) */
+.vas-card-top { gap: 8px; flex-wrap: wrap; }
+.vas-group { margin-right: auto; padding: 5px 14px; border-radius: 999px; background: #dff7ee; color: #11865c; font-size: 13px; font-weight: 800; }

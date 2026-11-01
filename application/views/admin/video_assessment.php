@@ -73,6 +73,14 @@
 .va-opt-body img { max-width: 100%; max-height: 110px; border-radius: 10px; display: block; }
 .va-opt-body video { width: 100%; border-radius: 10px; background: #000; display: block; }
 .va-opt-body audio { width: 100%; }
+.va-tag.group { background: #dff7ee; color: #11865c; }
+.va-groups { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.va-group-chip { border: 2px solid #eceefa; background: #fff; border-radius: 999px; padding: 7px 14px; font-weight: 800; color: #3f4a6b; cursor: pointer; }
+.va-group-chip span { display: inline-block; min-width: 22px; margin-left: 4px; padding: 0 6px; border-radius: 999px; background: #f1f3fb; font-size: 12px; }
+.va-group-chip.is-active { border-color: #5b6cff; background: #eef0ff; color: #4453e6; }
+.va-group-quick { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.va-group-pick { border: 0; border-radius: 999px; padding: 4px 12px; background: #dff7ee; color: #11865c; font-size: 12.5px; font-weight: 800; cursor: pointer; }
+.va-group-pick:hover { background: #22c58b; color: #fff; }
 .va-tag.drag { background: #e2f7fb; color: #0a7f99; }
 .va-tag.match { background: #efeaff; color: #5b3fc4; }
 .va-pairs { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; }
@@ -210,9 +218,25 @@ body.va-modal-open { overflow: hidden; }
             <button type="button" class="btn btn-primary" data-va-add>+ Add First Question</button>
         </div>
     <?php } else { ?>
+        <?php
+            $g_counts = array(); $g_none = 0;
+            foreach ($questions as $q) {
+                $g = isset($q['question_group']) ? $q['question_group'] : null;
+                if ($g === null || $g === '') { $g_none++; } else { $g_counts[$g] = isset($g_counts[$g]) ? $g_counts[$g] + 1 : 1; }
+            }
+        ?>
+        <?php if (!empty($g_counts)) { ?>
+        <div class="va-groups" role="tablist" aria-label="Filter questions by group">
+            <button type="button" class="va-group-chip is-active" data-va-group="*">All <span><?php echo count($questions); ?></span></button>
+            <?php foreach ($g_counts as $g => $n) { ?>
+                <button type="button" class="va-group-chip" data-va-group="<?php echo html_escape($g); ?>"><?php echo html_escape($g); ?> <span><?php echo $n; ?></span></button>
+            <?php } ?>
+            <?php if ($g_none) { ?><button type="button" class="va-group-chip" data-va-group="">No group <span><?php echo $g_none; ?></span></button><?php } ?>
+        </div>
+        <?php } ?>
         <div class="va-list" id="vaList">
             <?php foreach ($questions as $i => $q) { ?>
-            <div class="va-card <?php echo $q['status'] ? '' : 'is-off'; ?>" data-id="<?php echo (int) $q['id']; ?>">
+            <div class="va-card <?php echo $q['status'] ? '' : 'is-off'; ?>" data-id="<?php echo (int) $q['id']; ?>" data-group="<?php echo html_escape(isset($q['question_group']) ? (string) $q['question_group'] : ''); ?>">
                 <div class="va-handle" title="Drag to reorder">&#8942;&#8942;</div>
                 <div class="va-num"><?php echo $i + 1; ?></div>
                 <div class="va-body">
@@ -227,6 +251,7 @@ body.va-modal-open { overflow: hidden; }
                             <span class="va-tag fill">Fill up / Type answer</span>
                         <?php } ?>
                         <?php if ($q['question_media_type'] !== 'none') { ?><span class="va-tag"><?php echo $type_labels[$q['question_media_type']]; ?> question</span><?php } ?>
+                        <?php if (!empty($q['question_group'])) { ?><span class="va-tag group">&#127991;&#65039; <?php echo html_escape($q['question_group']); ?></span><?php } ?>
                         <span class="va-tag"><?php echo rtrim(rtrim($q['marks'], '0'), '.'); ?> mark<?php echo $q['marks'] == 1 ? '' : 's'; ?></span>
                         <?php if ($q['show_at'] !== '') { ?><span class="va-tag time">&#9201; at <?php echo $q['show_at']; ?></span><?php } ?>
                         <?php if (!$q['status']) { ?><span class="va-tag">Hidden</span><?php } ?>
@@ -344,6 +369,17 @@ body.va-modal-open { overflow: hidden; }
                     <label><input type="radio" name="question_type" value="fill"><span>&#9997;&#65039; Fill up / Type answer</span></label>
                     <label><input type="radio" name="question_type" value="drag"><span>&#9995; Drag &amp; Drop</span></label>
                     <label><input type="radio" name="question_type" value="match"><span>&#128279; Matching</span></label>
+                </div>
+            </div>
+
+            <div class="va-section">
+                <label class="va-label" for="vaGroup">Group / label <small style="font-weight:600">(optional)</small></label>
+                <input type="text" class="form-control" id="vaGroup" name="question_group" list="vaGroupList" maxlength="60" autocomplete="off" placeholder="e.g. Basic, Advanced or your own label">
+                <datalist id="vaGroupList">
+                    <?php foreach ($groups as $g) { ?><option value="<?php echo html_escape($g); ?>"></option><?php } ?>
+                </datalist>
+                <div class="va-group-quick">
+                    <?php foreach ($groups as $g) { ?><button type="button" class="va-group-pick" data-va-pick-group="<?php echo html_escape($g); ?>"><?php echo html_escape($g); ?></button><?php } ?>
                 </div>
             </div>
 
@@ -614,6 +650,7 @@ document.addEventListener('DOMContentLoaded', function () {
             $('#vaQMediaPreview').html(mediaTag(q.question_media_type, mediaUrl(q.question_media)));
             $('#vaMarks').val(parseFloat(q.marks));
             $('#vaShowAt').val(q.show_at);
+            $('#vaGroup').val(q.question_group || '');
             if (q.question_type === 'match') {
                 var m = q.options || {};
                 $form.find('[name="pair_count"][value="' + (m.pairs ? m.pairs.length : 4) + '"]').prop('checked', true);
@@ -694,6 +731,19 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
+    /* ---- question groups ---- */
+    $(document).on('click', '[data-va-group]', function () {
+        var g = String($(this).data('va-group'));
+        $('.va-group-chip').removeClass('is-active');
+        $(this).addClass('is-active');
+        $('#vaList .va-card').each(function () {
+            $(this).toggle(g === '*' || String($(this).attr('data-group')) === g);
+        });
+    });
+    $(document).on('click', '[data-va-pick-group]', function () {
+        $('#vaGroup').val($(this).data('va-pick-group')).trigger('focus');
+    });
 
     /* ---- quiz introduction ---- */
     var $intro = $('#vaIntroModal'), $introForm = $('#vaIntroForm');
