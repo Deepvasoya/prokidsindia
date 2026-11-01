@@ -73,14 +73,19 @@
 .va-opt-body img { max-width: 100%; max-height: 110px; border-radius: 10px; display: block; }
 .va-opt-body video { width: 100%; border-radius: 10px; background: #000; display: block; }
 .va-opt-body audio { width: 100%; }
-.va-tag.group { background: #dff7ee; color: #11865c; }
-.va-groups { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
-.va-group-chip { border: 2px solid #eceefa; background: #fff; border-radius: 999px; padding: 7px 14px; font-weight: 800; color: #3f4a6b; cursor: pointer; }
-.va-group-chip span { display: inline-block; min-width: 22px; margin-left: 4px; padding: 0 6px; border-radius: 999px; background: #f1f3fb; font-size: 12px; }
-.va-group-chip.is-active { border-color: #5b6cff; background: #eef0ff; color: #4453e6; }
-.va-group-quick { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-.va-group-pick { border: 0; border-radius: 999px; padding: 4px 12px; background: #dff7ee; color: #11865c; font-size: 12.5px; font-weight: 800; cursor: pointer; }
-.va-group-pick:hover { background: #22c58b; color: #fff; }
+.va-set { margin-bottom: 22px; padding: 18px; border-radius: 24px; background: #fff; border: 2px solid #eceefa; }
+.va-set-none { background: #fafbff; }
+.va-set:not(.va-set-none) + .va-set-none { border-style: dashed; }
+.va-set-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.va-set-title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.va-set-title h3 { margin: 0; font-size: 21px; color: #1f2a4d; text-transform: none; }
+.va-set-no { padding: 5px 12px; border-radius: 999px; background: linear-gradient(135deg,#5b6cff,#9b7bff); color: #fff; font-size: 12.5px; font-weight: 800; }
+.va-set-count { color: #7a84a3; font-size: 13px; font-weight: 700; }
+.va-set-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.va-set-actions .va-set-add { height: 38px; padding: 0 16px; }
+.va-set-actions .va-icon-btn:disabled { opacity: .35; cursor: default; transform: none; }
+.va-set-empty { padding: 18px; border-radius: 16px; border: 2px dashed #e3e6f3; color: #7a84a3; font-weight: 700; text-align: center; }
+.va-dialog.va-dialog-xs { max-width: min(520px, calc(100vw - 32px)); }
 .va-tag.drag { background: #e2f7fb; color: #0a7f99; }
 .va-tag.match { background: #efeaff; color: #5b3fc4; }
 .va-pairs { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; }
@@ -185,6 +190,7 @@ body.va-modal-open { overflow: hidden; }
                 <div class="va-stat va-green"><strong><?php echo rtrim(rtrim(number_format($total_marks, 2), '0'), '.'); ?></strong><span>Total Marks</span></div>
             </div>
             <div class="va-hero-actions">
+                <?php if ($sets_ready) { ?><button type="button" class="btn btn-primary va-add-btn" data-va-set-new>+ New Set</button><?php } ?>
                 <button type="button" class="btn btn-primary va-add-btn" data-va-add>+ Add Question</button>
                 <button type="button" class="btn va-intro-btn" data-va-intro>&#128203; Quiz introduction<?php echo !empty($intro) ? ' &#10003;' : ''; ?></button>
             </div>
@@ -210,35 +216,12 @@ body.va-modal-open { overflow: hidden; }
         </div>
     <?php } ?>
 
-    <?php if (empty($questions)) { ?>
-        <div class="va-empty">
-            <div class="va-empty-icon">&#128221;</div>
-            <h4>No questions yet</h4>
-            <p>Add MCQs or fill-up questions that students answer while watching this video.</p>
-            <button type="button" class="btn btn-primary" data-va-add>+ Add First Question</button>
-        </div>
-    <?php } else { ?>
-        <?php
-            $g_counts = array(); $g_none = 0;
-            foreach ($questions as $q) {
-                $g = isset($q['question_group']) ? $q['question_group'] : null;
-                if ($g === null || $g === '') { $g_none++; } else { $g_counts[$g] = isset($g_counts[$g]) ? $g_counts[$g] + 1 : 1; }
-            }
-        ?>
-        <?php if (!empty($g_counts)) { ?>
-        <div class="va-groups" role="tablist" aria-label="Filter questions by group">
-            <button type="button" class="va-group-chip is-active" data-va-group="*">All <span><?php echo count($questions); ?></span></button>
-            <?php foreach ($g_counts as $g => $n) { ?>
-                <button type="button" class="va-group-chip" data-va-group="<?php echo html_escape($g); ?>"><?php echo html_escape($g); ?> <span><?php echo $n; ?></span></button>
-            <?php } ?>
-            <?php if ($g_none) { ?><button type="button" class="va-group-chip" data-va-group="">No group <span><?php echo $g_none; ?></span></button><?php } ?>
-        </div>
-        <?php } ?>
-        <div class="va-list" id="vaList">
-            <?php foreach ($questions as $i => $q) { ?>
-            <div class="va-card <?php echo $q['status'] ? '' : 'is-off'; ?>" data-id="<?php echo (int) $q['id']; ?>" data-group="<?php echo html_escape(isset($q['question_group']) ? (string) $q['question_group'] : ''); ?>">
+    <?php
+        // Card for one question (used inside each set section).
+        $render_card = function ($q, $n) use ($media_url, $media_tag, $type_labels) { ?>
+            <div class="va-card <?php echo $q['status'] ? '' : 'is-off'; ?>" data-id="<?php echo (int) $q['id']; ?>">
                 <div class="va-handle" title="Drag to reorder">&#8942;&#8942;</div>
-                <div class="va-num"><?php echo $i + 1; ?></div>
+                <div class="va-num"><?php echo (int) $n; ?></div>
                 <div class="va-body">
                     <div class="va-tags">
                         <?php if ($q['question_type'] === 'mcq') { ?>
@@ -251,7 +234,6 @@ body.va-modal-open { overflow: hidden; }
                             <span class="va-tag fill">Fill up / Type answer</span>
                         <?php } ?>
                         <?php if ($q['question_media_type'] !== 'none') { ?><span class="va-tag"><?php echo $type_labels[$q['question_media_type']]; ?> question</span><?php } ?>
-                        <?php if (!empty($q['question_group'])) { ?><span class="va-tag group">&#127991;&#65039; <?php echo html_escape($q['question_group']); ?></span><?php } ?>
                         <span class="va-tag"><?php echo rtrim(rtrim($q['marks'], '0'), '.'); ?> mark<?php echo $q['marks'] == 1 ? '' : 's'; ?></span>
                         <?php if ($q['show_at'] !== '') { ?><span class="va-tag time">&#9201; at <?php echo $q['show_at']; ?></span><?php } ?>
                         <?php if (!$q['status']) { ?><span class="va-tag">Hidden</span><?php } ?>
@@ -303,11 +285,86 @@ body.va-modal-open { overflow: hidden; }
                     <button type="button" class="va-icon-btn del" title="Delete" data-va-delete="<?php echo (int) $q['id']; ?>"><i class="fa fa-trash"></i></button>
                 </div>
             </div>
-            <?php } ?>
+    <?php };
+
+        // Group questions by set (sets in their order, then questions without a set).
+        $set_ids = array_map('intval', array_column($sets, 'id'));
+        $by_set = array(); $no_set = array();
+        foreach ($questions as $q) {
+            $sid = isset($q['set_id']) ? (int) $q['set_id'] : 0;
+            if ($sid && in_array($sid, $set_ids, TRUE)) { $by_set[$sid][] = $q; } else { $no_set[] = $q; }
+        }
+    ?>
+
+    <?php if (empty($questions) && empty($sets)) { ?>
+        <div class="va-empty">
+            <div class="va-empty-icon">&#128221;</div>
+            <h4>No questions yet</h4>
+            <p><?php echo $sets_ready ? 'Create a set (e.g. Level 1, Basic) and add questions inside it, or add questions directly.' : 'Add MCQs or fill-up questions that students answer while watching this video.'; ?></p>
+            <div class="va-hero-actions" style="justify-content:center">
+                <?php if ($sets_ready) { ?><button type="button" class="btn btn-primary" data-va-set-new>+ New Set</button><?php } ?>
+                <button type="button" class="btn btn-primary" data-va-add>+ Add Question</button>
+            </div>
         </div>
+    <?php } else { ?>
+        <?php foreach ($sets as $si => $set) { $items = isset($by_set[(int) $set['id']]) ? $by_set[(int) $set['id']] : array(); ?>
+        <div class="va-set" data-set-id="<?php echo (int) $set['id']; ?>">
+            <div class="va-set-head">
+                <div class="va-set-title">
+                    <span class="va-set-no">Set <?php echo $si + 1; ?></span>
+                    <h3><?php echo html_escape($set['name']); ?></h3>
+                    <span class="va-set-count"><?php echo count($items); ?> question<?php echo count($items) == 1 ? '' : 's'; ?></span>
+                </div>
+                <div class="va-set-actions">
+                    <button type="button" class="btn btn-primary va-set-add" data-va-add data-set="<?php echo (int) $set['id']; ?>">+ Add question</button>
+                    <button type="button" class="va-icon-btn edit" title="Rename set" data-va-set-rename="<?php echo (int) $set['id']; ?>" data-name="<?php echo html_escape($set['name']); ?>"><i class="fa fa-edit"></i></button>
+                    <button type="button" class="va-icon-btn" title="Move set up" data-va-set-move="up" data-id="<?php echo (int) $set['id']; ?>" <?php echo $si === 0 ? 'disabled' : ''; ?>>&#9650;</button>
+                    <button type="button" class="va-icon-btn" title="Move set down" data-va-set-move="down" data-id="<?php echo (int) $set['id']; ?>" <?php echo $si === count($sets) - 1 ? 'disabled' : ''; ?>>&#9660;</button>
+                    <button type="button" class="va-icon-btn del" title="Delete set" data-va-set-delete="<?php echo (int) $set['id']; ?>"><i class="fa fa-trash"></i></button>
+                </div>
+            </div>
+            <div class="va-list" data-sortable>
+                <?php foreach ($items as $n => $q) { $render_card($q, $n + 1); } ?>
+            </div>
+            <?php if (empty($items)) { ?><div class="va-set-empty">No questions in this set yet &mdash; click <b>+ Add question</b>.</div><?php } ?>
+        </div>
+        <?php } ?>
+
+        <?php if (!empty($no_set)) { ?>
+        <div class="va-set va-set-none">
+            <?php if (!empty($sets)) { ?>
+            <div class="va-set-head">
+                <div class="va-set-title"><h3>No set</h3><span class="va-set-count"><?php echo count($no_set); ?> question<?php echo count($no_set) == 1 ? '' : 's'; ?> &middot; edit a question to move it into a set</span></div>
+            </div>
+            <?php } ?>
+            <div class="va-list" data-sortable>
+                <?php foreach ($no_set as $n => $q) { $render_card($q, $n + 1); } ?>
+            </div>
+        </div>
+        <?php } ?>
     <?php } ?>
 </div>
 </section>
+
+<!-- New / rename set -->
+<div class="va-modal" id="vaSetModal" aria-hidden="true">
+    <div class="va-dialog va-dialog-xs" role="dialog" aria-modal="true" aria-labelledby="vaSetTitle">
+        <button type="button" class="va-close" data-va-close aria-label="Close">&times;</button>
+        <h3 id="vaSetTitle">New set</h3>
+        <form id="vaSetForm" novalidate>
+            <input type="hidden" name="video_id" value="<?php echo (int) $video['id']; ?>">
+            <input type="hidden" name="id" value="">
+            <div class="va-section">
+                <label class="va-label" for="vaSetName">Set name</label>
+                <input type="text" class="form-control" id="vaSetName" name="name" maxlength="80" autocomplete="off" placeholder="e.g. Level 1, Basic, Advanced">
+            </div>
+            <div class="va-footer">
+                <button type="button" class="btn va-btn-ghost" data-va-close>Cancel</button>
+                <button type="submit" class="btn btn-primary" id="vaSetSave">Save Set</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <!-- Quiz introduction -->
 <div class="va-modal" id="vaIntroModal" aria-hidden="true">
@@ -372,16 +429,16 @@ body.va-modal-open { overflow: hidden; }
                 </div>
             </div>
 
+            <?php if ($sets_ready) { ?>
             <div class="va-section">
-                <label class="va-label" for="vaGroup">Group / label <small style="font-weight:600">(optional)</small></label>
-                <input type="text" class="form-control" id="vaGroup" name="question_group" list="vaGroupList" maxlength="60" autocomplete="off" placeholder="e.g. Basic, Advanced or your own label">
-                <datalist id="vaGroupList">
-                    <?php foreach ($groups as $g) { ?><option value="<?php echo html_escape($g); ?>"></option><?php } ?>
-                </datalist>
-                <div class="va-group-quick">
-                    <?php foreach ($groups as $g) { ?><button type="button" class="va-group-pick" data-va-pick-group="<?php echo html_escape($g); ?>"><?php echo html_escape($g); ?></button><?php } ?>
-                </div>
+                <label class="va-label" for="vaSet">Set</label>
+                <select class="form-control" id="vaSet" name="set_id">
+                    <option value="">&mdash; No set &mdash;</option>
+                    <?php foreach ($sets as $set) { ?><option value="<?php echo (int) $set['id']; ?>"><?php echo html_escape($set['name']); ?></option><?php } ?>
+                </select>
+                <?php if (empty($sets)) { ?><div class="va-hint">Tip: create sets like "Level 1" or "Basic" with <b>+ New Set</b> to group questions.</div><?php } ?>
             </div>
+            <?php } ?>
 
             <div class="va-section">
                 <label class="va-label" for="vaQText">Question</label>
@@ -623,6 +680,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     $(document).on('click', '[data-va-add]', function () {
         resetForm();
+        $('#vaSet').val($(this).data('set') || '');
         openModal('Add Question');
     });
     $(document).on('click', '[data-va-close]', closeModal);
@@ -650,7 +708,7 @@ document.addEventListener('DOMContentLoaded', function () {
             $('#vaQMediaPreview').html(mediaTag(q.question_media_type, mediaUrl(q.question_media)));
             $('#vaMarks').val(parseFloat(q.marks));
             $('#vaShowAt').val(q.show_at);
-            $('#vaGroup').val(q.question_group || '');
+            $('#vaSet').val(q.set_id || '');
             if (q.question_type === 'match') {
                 var m = q.options || {};
                 $form.find('[name="pair_count"][value="' + (m.pairs ? m.pairs.length : 4) + '"]').prop('checked', true);
@@ -719,12 +777,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    if ($.fn.sortable && $('#vaList').length) {
-        $('#vaList').sortable({
+    if ($.fn.sortable && $('[data-sortable]').length) {
+        // Drag to reorder inside a set; the order of all cards on the page is saved.
+        $('[data-sortable]').sortable({
             handle: '.va-handle',
             update: function () {
-                var ids = $('#vaList .va-card').map(function () { return $(this).data('id'); }).get();
-                $('#vaList .va-num').each(function (i) { $(this).text(i + 1); });
+                $(this).find('.va-num').each(function (i) { $(this).text(i + 1); });
+                var ids = $('[data-sortable] .va-card').map(function () { return $(this).data('id'); }).get();
                 $.post(api + 'reorder', { video_id: <?php echo (int) $video['id']; ?>, ids: ids }, function (res) {
                     if (res.status != 1) notify(false, res.msg);
                 }, 'json');
@@ -732,17 +791,46 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    /* ---- question groups ---- */
-    $(document).on('click', '[data-va-group]', function () {
-        var g = String($(this).data('va-group'));
-        $('.va-group-chip').removeClass('is-active');
-        $(this).addClass('is-active');
-        $('#vaList .va-card').each(function () {
-            $(this).toggle(g === '*' || String($(this).attr('data-group')) === g);
-        });
+    /* ---- question sets ---- */
+    var $setModal = $('#vaSetModal'), $setForm = $('#vaSetForm');
+    function openSetModal(id, name) {
+        $setForm.find('[name="id"]').val(id || '');
+        $('#vaSetName').val(name || '');
+        $('#vaSetTitle').text(id ? 'Rename set' : 'New set');
+        $setModal.addClass('open').attr('aria-hidden', 'false');
+        $('body').addClass('va-modal-open');
+        setTimeout(function () { $('#vaSetName').trigger('focus'); }, 50);
+    }
+    $(document).on('click', '[data-va-set-new]', function () { openSetModal('', ''); });
+    $(document).on('click', '[data-va-set-rename]', function () { openSetModal($(this).data('va-set-rename'), $(this).data('name')); });
+    $setModal.on('click', '[data-va-close]', function () {
+        $setModal.removeClass('open').attr('aria-hidden', 'true');
+        $('body').removeClass('va-modal-open');
     });
-    $(document).on('click', '[data-va-pick-group]', function () {
-        $('#vaGroup').val($(this).data('va-pick-group')).trigger('focus');
+    $setForm.on('submit', function (e) {
+        e.preventDefault();
+        $.post(api + 'set_save', $setForm.serialize(), function (res) {
+            notify(res.status == 1, res.msg);
+            if (res.status == 1) { setTimeout(function () { location.reload(); }, 400); }
+        }, 'json').fail(function () { notify(false, 'Could not save the set.'); });
+    });
+    $(document).on('click', '[data-va-set-move]', function () {
+        $.post(api + 'set_move', { id: $(this).data('id'), dir: $(this).data('va-set-move') }, function (res) {
+            if (res.status == 1) { location.reload(); } else { notify(false, res.msg); }
+        }, 'json');
+    });
+    $(document).on('click', '[data-va-set-delete]', function () {
+        var id = $(this).data('va-set-delete');
+        var go = function () {
+            $.post(api + 'set_delete', { id: id }, function (res) {
+                notify(res.status == 1, res.msg);
+                if (res.status == 1) { setTimeout(function () { location.reload(); }, 500); }
+            }, 'json');
+        };
+        if (window.swal) {
+            swal({ title: 'Delete this set?', text: 'Its questions are kept and moved to "No set".', icon: 'warning', buttons: ['Cancel', 'Delete'], dangerMode: true })
+                .then(function (ok) { if (ok) go(); });
+        } else if (confirm('Delete this set? Its questions are kept and moved to "No set".')) { go(); }
     });
 
     /* ---- quiz introduction ---- */

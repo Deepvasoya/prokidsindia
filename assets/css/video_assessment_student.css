@@ -268,3 +268,12 @@ audio.vas-card-media { width: 190px; }
 /* Question group label (e.g. Basic / Advanced) */
 .vas-card-top { gap: 8px; flex-wrap: wrap; }
 .vas-group { margin-right: auto; padding: 5px 14px; border-radius: 999px; background: #dff7ee; color: #11865c; font-size: 13px; font-weight: 800; }
+
+/* Question sets */
+.vas-set-intro .vas-set-emoji { font-size: 56px; margin: 6px 0 2px; }
+.vas-set-intro .vas-q { font-size: 30px; }
+.vas-dots-sets { flex-direction: column; gap: 6px; }
+.vas-set-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.vas-set-name { font-size: 12px; font-weight: 800; color: #3f4a6b; }
+.vas-set-dots { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.vas-panel-side .vas-set-row { justify-content: center; }

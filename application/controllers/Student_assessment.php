@@ -33,6 +33,31 @@ class Student_assessment extends CI_Controller {
         }
 
         $rows = $this->active_questions($video['id']);
+
+        // Question sets: go through the quiz set by set (sets in admin order, then questions without a set).
+        $sets = array(); $set_pos = array();
+        if ($this->db->table_exists('video_assessment_sets') && $this->db->field_exists('set_id', 'video_assessment_questions')) {
+            $set_rows = $this->db->where('video_id', $video['id'])->order_by('sort_order', 'asc')->order_by('id', 'asc')
+                                 ->get('video_assessment_sets')->result_array();
+            foreach ($set_rows as $i => $sr) {
+                $set_pos[(int) $sr['id']] = $i;
+                $sets[(int) $sr['id']] = array('id' => (int) $sr['id'], 'name' => $sr['name'], 'count' => 0);
+            }
+            $order = array();
+            foreach ($rows as $k => $r) {
+                $sid = isset($r['set_id']) ? (int) $r['set_id'] : 0;
+                $order[$k] = isset($set_pos[$sid]) ? $set_pos[$sid] : count($set_pos);   // no set -> last
+                if (isset($sets[$sid])) { $sets[$sid]['count']++; }
+            }
+            // stable sort: by set position, keep the question order inside a set
+            $keys = array_keys($rows);
+            usort($keys, function ($a, $b) use ($order) { return $order[$a] === $order[$b] ? $a - $b : $order[$a] - $order[$b]; });
+            $rows = array_map(function ($k) use ($rows) { return $rows[$k]; }, $keys);
+            $sets = array_values(array_filter($sets, function ($st) { return $st['count'] > 0; }));
+        }
+        $set_names = array();
+        foreach ($sets as $st) { $set_names[$st['id']] = $st['name']; }
+
         $questions = array();
         $perms = (array) $this->session->userdata('vas_match_perm');
         foreach ($rows as $q) {
@@ -60,7 +85,8 @@ class Student_assessment extends CI_Controller {
             $questions[] = $extra + array(
                 'id'          => (int) $q['id'],
                 'type'        => $q['question_type'],
-                'group'       => isset($q['question_group']) ? (string) $q['question_group'] : '',
+                'set_id'      => (isset($q['set_id']) && isset($set_names[(int) $q['set_id']])) ? (int) $q['set_id'] : 0,
+                'set_name'    => (isset($q['set_id']) && isset($set_names[(int) $q['set_id']])) ? $set_names[(int) $q['set_id']] : '',
                 'text'        => (string) $q['question_text'],
                 'media_type'  => $q['question_media_type'],
                 'media'       => $q['question_media'] ? base_url($q['question_media']) : '',
@@ -90,7 +116,7 @@ class Student_assessment extends CI_Controller {
             }
         }
 
-        return $this->json(1, '', array('questions' => $questions, 'last_attempt' => $last ?: NULL, 'intro' => $intro));
+        return $this->json(1, '', array('questions' => $questions, 'sets' => $sets, 'last_attempt' => $last ?: NULL, 'intro' => $intro));
     }
 
     function check() {

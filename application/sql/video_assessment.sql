@@ -52,5 +52,18 @@ CREATE TABLE IF NOT EXISTS `video_assessment_intro` (
   PRIMARY KEY (`video_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Question groups / labels (e.g. Basic, Advanced). Run once; skip if the column already exists.
-ALTER TABLE `video_assessment_questions` ADD COLUMN `question_group` VARCHAR(60) NULL DEFAULT NULL AFTER `question_type`;
+-- Question sets (e.g. "Level 1", "Basic"): questions are added inside a set and
+-- students go through the quiz set by set.
+CREATE TABLE IF NOT EXISTS `video_assessment_sets` (
+  `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `video_id`   INT NOT NULL,
+  `admin_id`   INT NOT NULL,
+  `name`       VARCHAR(80) NOT NULL,
+  `sort_order` INT NOT NULL DEFAULT 0,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_video` (`video_id`, `sort_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Run once (a "duplicate column" error just means it is already there).
+ALTER TABLE `video_assessment_questions` ADD COLUMN `set_id` INT NULL DEFAULT NULL AFTER `question_type`;

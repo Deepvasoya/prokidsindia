@@ -79,10 +79,25 @@
         var total = 0, timed = 0;
         $.each(qs, function (i, q) { total += q.marks; if (q.show_at !== null) { timed++; } });
         var done = Object.keys(state.answers).length;
-        var dots = $.map(qs, function (q) {
+        var dot = function (q) {
             var r = state.results[q.id];
             return '<span class="vas-dot ' + (r === undefined ? '' : (r ? 'ok' : 'bad')) + '"></span>';
-        }).join('');
+        };
+        var dots;
+        if (state.sets.length) {
+            // one row per set: name + its dots
+            var order = [], rows = {};
+            $.each(qs, function (i, q) {
+                var k = setKey(q);
+                if (!rows[k]) { rows[k] = { name: q.set_name || 'More questions', html: '' }; order.push(k); }
+                rows[k].html += dot(q);
+            });
+            dots = $.map(order, function (k) {
+                return '<div class="vas-set-row"><span class="vas-set-name">' + esc(rows[k].name) + '</span><span class="vas-set-dots">' + rows[k].html + '</span></div>';
+            }).join('');
+        } else {
+            dots = $.map(qs, dot).join('');
+        }
 
         var last = state.last
             ? '<div class="vas-last">&#11088; Last score: <b>' + num(state.last.score) + ' / ' + num(state.last.total_marks) + '</b></div>'
@@ -94,7 +109,7 @@
                 '<h4>Quiz time!</h4>' +
                 '<p>' + qs.length + ' question' + (qs.length === 1 ? '' : 's') + ' &middot; ' + num(total) + ' marks' +
                 (timed ? ' &middot; ' + timed + ' will pop up while you watch' : '') + '</p>' +
-                '<div class="vas-dots">' + dots + '</div>' + last +
+                '<div class="vas-dots' + (state.sets.length ? ' vas-dots-sets' : '') + '">' + dots + '</div>' + last +
             '</div>' +
             '<button type="button" class="vas-btn vas-btn-main" data-vas="begin">' +
                 (done ? (done >= qs.length ? 'See my score' : 'Continue quiz') : 'Start quiz') + ' &rarr;</button>'
@@ -149,8 +164,37 @@
         return t;
     }
 
+    function setKey(q) { return q.set_id || 0; }
+
+    function showSetIntro(q) {
+        var key = setKey(q);
+        var inSet = $.grep(state.questions, function (x) { return setKey(x) === key; });
+        var marks = 0; $.each(inSet, function (i, x) { marks += x.marks; });
+        var keys = [];
+        $.each(state.questions, function (i, x) { if (keys.indexOf(setKey(x)) === -1) { keys.push(setKey(x)); } });
+        state.current = { intro: true };
+        overlay().find('.vas-card').html(
+            '<div class="vas-intro vas-set-intro">' +
+                '<span class="vas-step">Set ' + (keys.indexOf(key) + 1) + ' of ' + keys.length + '</span>' +
+                '<div class="vas-set-emoji">&#127919;</div>' +
+                '<h3 class="vas-q">' + esc(q.set_name || 'More questions') + '</h3>' +
+                '<div class="vas-intro-meta">' + inSet.length + ' question' + (inSet.length === 1 ? '' : 's') + ' &middot; ' + num(marks) + ' mark' + (marks == 1 ? '' : 's') + '</div>' +
+            '</div>' +
+            '<div class="vas-actions"><button type="button" class="vas-btn vas-btn-main" data-vas="set-start">Let\'s go &rarr;</button></div>'
+        );
+        state.setNext = q;
+        overlay().addClass('open');
+        $('body').addClass('vas-open');
+    }
+
     function showQuestion(q) {
         if (state.intro && !state.introShown) { return showIntro(q); }
+        // Quiz mode with sets: announce each new set before its first question.
+        if (state.sets.length && state.mode === 'quiz' && state.currentSet !== setKey(q)) {
+            state.currentSet = setKey(q);
+            var p0 = player(); if (p0) { p0.pause(); }
+            return showSetIntro(q);
+        }
         state.current = q;
         state.pausedForQuestion = true;
         var p = player();
@@ -201,7 +245,7 @@
 
         overlay().find('.vas-card').html(
             '<div class="vas-card-top"><span class="vas-step">Question ' + index + ' of ' + state.questions.length + '</span>' +
-            (q.group ? '<span class="vas-group">' + esc(q.group) + '</span>' : '') +
+            (state.sets.length ? '<span class="vas-group">' + esc(q.set_name || 'More questions') + '</span>' : '') +
             '<span class="vas-marks">' + num(q.marks) + ' mark' + (q.marks == 1 ? '' : 's') + '</span></div>' +
             (q.text ? '<h3 class="vas-q">' + esc(q.text) + '</h3>' : '') +
             (q.media ? '<div class="vas-q-media vas-q-media-' + q.media_type + '">' + media(q.media_type, q.media) + '</div>' : '') +
@@ -368,6 +412,12 @@
     });
     $(document).on('input', '.vas-input', function () { $(this).removeClass('is-wrong'); });
     $(document).on('click', '[data-vas="continue"]', onContinue);
+    $(document).on('click', '[data-vas="set-start"]', function () {
+        if (!state || !state.setNext) { return; }
+        var next = state.setNext;
+        state.setNext = null;
+        showQuestion(next);
+    });
     $(document).on('click', '[data-vas="intro-start"]', function () {
         if (!state || !state.introNext) { return; }
         overlay().find('audio, video').each(function () { this.pause(); });
@@ -376,7 +426,7 @@
         showQuestion(next);
     });
     $(document).on('click', '[data-vas="retry"]', function () {
-        state.answers = {}; state.results = {}; state.mode = 'quiz';
+        state.answers = {}; state.results = {}; state.mode = 'quiz'; state.currentSet = null;
         renderPanel();
         showQuestion(state.questions[0]);
     });
@@ -499,13 +549,14 @@
     window.VAS = {
         start: function (videoId) {
             this.stop();
-            state = { videoId: videoId, questions: [], answers: {}, results: {}, mode: 'watch', ended: false, current: null, busy: false, last: null };
+            state = { videoId: videoId, questions: [], answers: {}, results: {}, mode: 'watch', ended: false, current: null, busy: false, last: null, sets: [], currentSet: null };
             var my = state;
             $.post(api + 'questions', { video_id: videoId }, null, 'json').done(function (res) {
                 if (my !== state || !res || res.status != 1 || !res.questions.length) { return; }
                 state.questions = $.map(res.questions, function (q) { q.marks = parseFloat(q.marks) || 0; return q; });
                 state.last = res.last_attempt;
                 state.intro = res.intro || null;
+                state.sets = res.sets || [];
                 renderPanel();
 
                 // Hook the player once it exists (Plyr for YouTube is created on popup open).

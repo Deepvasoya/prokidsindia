@@ -16,6 +16,7 @@ class Video_assessment extends CI_Controller {
     const TABLE      = 'video_assessment_questions';
     const UPLOAD_DIR = 'uploads/video_assessment/';
     const INTRO_TABLE = 'video_assessment_intro';
+    const SETS_TABLE  = 'video_assessment_sets';
 
     /** Allowed extensions and max size (bytes) per media kind. */
     private $media_rules = array(
@@ -59,7 +60,8 @@ class Video_assessment extends CI_Controller {
         $data['video']     = $video;
         $data['questions'] = $this->get_questions($video['id']);
         $data['intro']     = $this->get_intro($video['id']);
-        $data['groups']    = $this->known_groups();
+        $data['sets']      = $this->get_sets($video['id']);
+        $data['sets_ready'] = $this->sets_ready();
         $data['batch_name'] = '';
         $batch = $this->db_model->select_data('batch_name', 'batches', array('id' => $video['batch']), 1);
         if (!empty($batch)) {
@@ -153,10 +155,10 @@ class Video_assessment extends CI_Controller {
             'correct_option'      => NULL,
             'answers'             => NULL,
         );
-        // Optional group / label (e.g. Basic, Advanced); needs the question_group column.
-        if ($this->db->field_exists('question_group', self::TABLE)) {
-            $group = isset($post['question_group']) ? trim(preg_replace('/\s+/', ' ', $post['question_group'])) : '';
-            $row['question_group'] = $group === '' ? NULL : mb_substr($group, 0, 60);
+        // Set the question belongs to (optional; must be a set of this video).
+        if ($this->sets_ready()) {
+            $set_id = isset($post['set_id']) ? (int) $post['set_id'] : 0;
+            $row['set_id'] = ($set_id && $this->get_set($set_id, $video_id)) ? $set_id : NULL;
         }
 
         if ($type === 'mcq' || $type === 'drag') {
@@ -330,6 +332,65 @@ class Video_assessment extends CI_Controller {
         return $this->json(1, 'Introduction saved.');
     }
 
+    /** Create (no id) or rename (id) a set. */
+    function set_save() {
+        if (!$this->sets_ready()) {
+            return $this->json(0, 'Please run application/sql/video_assessment.sql first (question sets are not set up).');
+        }
+        $video = $this->get_video((int) $this->input->post('video_id'));
+        $name  = trim(preg_replace('/\s+/', ' ', (string) $this->input->post('name', TRUE)));
+        if (!$video) {
+            return $this->json(0, 'Video not found.');
+        }
+        if ($name === '') {
+            return $this->json(0, 'Please enter a set name.');
+        }
+        $name = mb_substr($name, 0, 80);
+        $id = (int) $this->input->post('id');
+        if ($id) {
+            if (!$this->get_set($id, $video['id'])) {
+                return $this->json(0, 'Set not found.');
+            }
+            $this->db->where('id', $id)->update(self::SETS_TABLE, array('name' => $name));
+            return $this->json(1, 'Set renamed.');
+        }
+        $max = $this->db->select_max('sort_order')->where('video_id', $video['id'])->get(self::SETS_TABLE)->row_array();
+        $this->db->insert(self::SETS_TABLE, array('video_id' => $video['id'], 'admin_id' => $this->owner_id,
+                                                  'name' => $name, 'sort_order' => (int) $max['sort_order'] + 1));
+        return $this->json(1, 'Set created.', array('id' => $this->db->insert_id()));
+    }
+
+    /** Delete a set; its questions are kept and moved to "No set". */
+    function set_delete() {
+        $set = $this->get_set((int) $this->input->post('id'));
+        if (!$set) {
+            return $this->json(0, 'Set not found.');
+        }
+        $this->db->where('set_id', $set['id'])->update(self::TABLE, array('set_id' => NULL));
+        $this->db->where('id', $set['id'])->delete(self::SETS_TABLE);
+        return $this->json(1, 'Set deleted. Its questions moved to "No set".');
+    }
+
+    /** Move a set up or down: POST id, dir = up | down */
+    function set_move() {
+        $set = $this->get_set((int) $this->input->post('id'));
+        if (!$set) {
+            return $this->json(0, 'Set not found.');
+        }
+        $sets = $this->get_sets($set['video_id']);
+        $ids  = array_map('intval', array_column($sets, 'id'));
+        $pos  = array_search((int) $set['id'], $ids, TRUE);
+        $swap = $this->input->post('dir') === 'up' ? $pos - 1 : $pos + 1;
+        if ($swap < 0 || $swap >= count($ids)) {
+            return $this->json(1, '');
+        }
+        list($ids[$pos], $ids[$swap]) = array($ids[$swap], $ids[$pos]);
+        foreach ($ids as $i => $sid) {
+            $this->db->where('id', $sid)->update(self::SETS_TABLE, array('sort_order' => $i + 1));
+        }
+        return $this->json(1, 'Order saved.');
+    }
+
     function delete() {
         $q = $this->get_question((int) $this->input->post('id'));
         if (!$q) {
@@ -377,18 +438,29 @@ class Video_assessment extends CI_Controller {
         return $row ?: NULL;
     }
 
-    /** Labels used so far by this admin, plus the defaults, for the group suggestions. */
-    private function known_groups() {
-        $groups = array('Basic', 'Advanced');
-        if ($this->db->field_exists('question_group', self::TABLE)) {
-            $rows = $this->db->distinct()->select('question_group')->where('admin_id', $this->owner_id)
-                             ->where('question_group IS NOT NULL', NULL, FALSE)->order_by('question_group', 'asc')
-                             ->get(self::TABLE)->result_array();
-            foreach ($rows as $r) {
-                if (!in_array($r['question_group'], $groups, TRUE)) { $groups[] = $r['question_group']; }
-            }
+    private function sets_ready() {
+        return $this->db->table_exists(self::SETS_TABLE) && $this->db->field_exists('set_id', self::TABLE);
+    }
+
+    private function get_sets($video_id) {
+        if (!$this->sets_ready()) {
+            return array();
         }
-        return $groups;
+        return $this->db->where(array('video_id' => (int) $video_id, 'admin_id' => $this->owner_id))
+                        ->order_by('sort_order', 'asc')->order_by('id', 'asc')
+                        ->get(self::SETS_TABLE)->result_array();
+    }
+
+    private function get_set($set_id, $video_id = NULL) {
+        if (!$set_id || !$this->sets_ready()) {
+            return NULL;
+        }
+        $where = array('id' => (int) $set_id, 'admin_id' => $this->owner_id);
+        if ($video_id !== NULL) {
+            $where['video_id'] = (int) $video_id;
+        }
+        $row = $this->db->where($where)->get(self::SETS_TABLE)->row_array();
+        return $row ?: NULL;
     }
 
     private function get_intro($video_id) {
