@@ -89,7 +89,7 @@
             : '';
 
         panel().html(
-            '<div class="vas-panel-icon">&#129504;</div>' +
+            '' +
             '<div class="vas-panel-body">' +
                 '<h4>Quiz time!</h4>' +
                 '<p>' + qs.length + ' question' + (qs.length === 1 ? '' : 's') + ' &middot; ' + num(total) + ' marks' +
