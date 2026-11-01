@@ -277,3 +277,20 @@ audio.vas-card-media { width: 190px; }
 .vas-set-name { font-size: 12px; font-weight: 800; color: #3f4a6b; }
 .vas-set-dots { display: inline-flex; flex-wrap: wrap; gap: 4px; }
 .vas-panel-side .vas-set-row { justify-content: center; }
+
+/* Level-wise quiz panel */
+.vas-levels { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.vas-level { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px; border-radius: 14px; background: #fff; border: 2px solid #f3e2c9; text-align: left; }
+.vas-level.is-done { border-color: #c9efdf; background: #f3fcf8; }
+.vas-level.is-locked { opacity: .7; background: #f6f7fb; border-color: #e6e8f2; }
+.vas-level-info { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.vas-level-info b { display: block; font-size: 14px; color: #1f2a4d; line-height: 1.2; word-break: break-word; }
+.vas-level-no { flex: 0 0 26px; height: 26px; border-radius: 50%; background: linear-gradient(135deg,#ff8a3d,#ff5c8a); color: #fff; font-weight: 800; font-size: 13px; display: flex; align-items: center; justify-content: center; }
+.vas-level.is-done .vas-level-no { background: #22c58b; }
+.vas-level.is-locked .vas-level-no { background: #b7bdd3; }
+.vas-level-meta, .vas-level-score { display: block; font-size: 11.5px; font-weight: 700; color: #7a84a3; }
+.vas-level-score { color: #11865c; }
+.vas-panel .vas-level-btn { width: auto; min-height: 34px; padding: 0 12px; font-size: 13px; flex: 0 0 auto; }
+.vas-level-btn.is-locked { background: #e6e8f2; color: #7a84a3; cursor: not-allowed; box-shadow: none; }
+.vas-panel-side .vas-level { flex-direction: column; align-items: stretch; }
+.vas-panel-side .vas-level-btn { width: 100%; }

@@ -103,6 +103,38 @@
             ? '<div class="vas-last">&#11088; Last score: <b>' + num(state.last.score) + ' / ' + num(state.last.total_marks) + '</b></div>'
             : '';
 
+        if (state.sets.length) {
+            // Level-wise: each set has its own button; a set unlocks after the previous one is done.
+            var prevName = '';
+            var rowsHtml = $.map(state.sets, function (st, i) {
+                var btn;
+                if (!st.unlocked) {
+                    btn = '<button type="button" class="vas-btn vas-level-btn is-locked" disabled title="Finish ' + esc(prevName) + ' first">&#128274; Locked</button>';
+                } else if (st.done) {
+                    btn = '<button type="button" class="vas-btn vas-btn-ghost vas-level-btn" data-vas="set-begin" data-set="' + st.id + '">&#8635; Play again</button>';
+                } else {
+                    btn = '<button type="button" class="vas-btn vas-btn-main vas-level-btn" data-vas="set-begin" data-set="' + st.id + '">Start &#9654;</button>';
+                }
+                var status = st.done
+                    ? '<span class="vas-level-score">&#9989; ' + num(st.best || 0) + ' / ' + num(st.marks) + '</span>'
+                    : (st.unlocked ? '<span class="vas-level-meta">' + st.count + ' question' + (st.count == 1 ? '' : 's') + '</span>'
+                                   : '<span class="vas-level-meta">Finish ' + esc(prevName) + ' first</span>');
+                prevName = st.name;
+                return '<div class="vas-level' + (st.done ? ' is-done' : '') + (st.unlocked ? '' : ' is-locked') + '">' +
+                           '<div class="vas-level-info"><span class="vas-level-no">' + (i + 1) + '</span><div><b>' + esc(st.name) + '</b>' + status + '</div></div>' +
+                           btn +
+                       '</div>';
+            }).join('');
+            panel().html(
+                '<div class="vas-panel-body">' +
+                    '<h4>Quiz time!</h4>' +
+                    '<p>' + state.sets.length + ' levels &middot; finish each level to unlock the next</p>' +
+                '</div>' +
+                '<div class="vas-levels">' + rowsHtml + '</div>'
+            ).show();
+            return;
+        }
+
         panel().html(
             '' +
             '<div class="vas-panel-body">' +
@@ -150,7 +182,7 @@
                 '<h3 class="vas-q">' + esc(it.title || 'Quiz time!') + '</h3>' +
                 (it.media ? '<div class="vas-q-media vas-q-media-' + it.media_type + '">' + media(it.media_type, it.media) + '</div>' : '') +
                 (it.text ? '<div class="vas-intro-text">' + esc(it.text).replace(/\n/g, '<br>') + '</div>' : '') +
-                '<div class="vas-intro-meta">' + state.questions.length + ' questions &middot; ' + num(totalMarks()) + ' marks</div>' +
+                '<div class="vas-intro-meta">' + (state.sets.length ? state.sets.length + ' levels &middot; ' : '') + state.questions.length + ' questions &middot; ' + num(totalMarks()) + ' marks</div>' +
             '</div>' +
             '<div class="vas-actions"><button type="button" class="vas-btn vas-btn-main" data-vas="intro-start">Let\'s start &rarr;</button></div>'
         );
@@ -170,12 +202,11 @@
         var key = setKey(q);
         var inSet = $.grep(state.questions, function (x) { return setKey(x) === key; });
         var marks = 0; $.each(inSet, function (i, x) { marks += x.marks; });
-        var keys = [];
-        $.each(state.questions, function (i, x) { if (keys.indexOf(setKey(x)) === -1) { keys.push(setKey(x)); } });
+        var keys = $.map(state.sets, function (st) { return st.id; });
         state.current = { intro: true };
         overlay().find('.vas-card').html(
             '<div class="vas-intro vas-set-intro">' +
-                '<span class="vas-step">Set ' + (keys.indexOf(key) + 1) + ' of ' + keys.length + '</span>' +
+                '<span class="vas-step">Level ' + (keys.indexOf(key) + 1) + ' of ' + keys.length + '</span>' +
                 '<div class="vas-set-emoji">&#127919;</div>' +
                 '<h3 class="vas-q">' + esc(q.set_name || 'More questions') + '</h3>' +
                 '<div class="vas-intro-meta">' + inSet.length + ' question' + (inSet.length === 1 ? '' : 's') + ' &middot; ' + num(marks) + ' mark' + (marks == 1 ? '' : 's') + '</div>' +
@@ -201,7 +232,8 @@
         if (p) { p.pause(); }
         exitFullscreen();
 
-        var index = state.questions.indexOf(q) + 1;
+        var pool = activeQuestions();
+        var index = pool.indexOf(q) + 1;
         var body = '';
         if (q.type === 'mcq') {
             body = '<div class="vas-options vas-options-' + q.option_type + ' vas-count-' + q.options.length + '">' +
@@ -244,7 +276,7 @@
         }
 
         overlay().find('.vas-card').html(
-            '<div class="vas-card-top"><span class="vas-step">Question ' + index + ' of ' + state.questions.length + '</span>' +
+            '<div class="vas-card-top"><span class="vas-step">Question ' + index + ' of ' + pool.length + '</span>' +
             (state.sets.length ? '<span class="vas-group">' + esc(q.set_name || 'More questions') + '</span>' : '') +
             '<span class="vas-marks">' + num(q.marks) + ' mark' + (q.marks == 1 ? '' : 's') + '</span></div>' +
             (q.text ? '<h3 class="vas-q">' + esc(q.text) + '</h3>' : '') +
@@ -335,11 +367,32 @@
         renderPanel();
     }
 
+    /** Questions of the level being played (all questions when sets are not used). */
+    function activeQuestions() {
+        if (state.activeSet === null || state.activeSet === undefined) { return state.questions; }
+        return $.grep(state.questions, function (q) { return setKey(q) === state.activeSet; });
+    }
     function nextQuestion() {
-        for (var i = 0; i < state.questions.length; i++) {
-            if (state.answers[state.questions[i].id] === undefined) { return state.questions[i]; }
+        var list = activeQuestions();
+        for (var i = 0; i < list.length; i++) {
+            if (state.answers[list[i].id] === undefined) { return list[i]; }
         }
         return null;
+    }
+    function setById(id) {
+        for (var i = 0; i < state.sets.length; i++) { if (state.sets[i].id === id) { return state.sets[i]; } }
+        return null;
+    }
+    function beginSet(id) {
+        var st = setById(id);
+        if (!st || !st.unlocked) { return; }
+        state.mode = 'quiz';
+        state.activeSet = id;
+        state.currentSet = null;
+        // fresh try of this level
+        $.each(activeQuestions(), function (i, q) { delete state.answers[q.id]; delete state.results[q.id]; });
+        var first = nextQuestion();
+        if (first) { showQuestion(first); }
     }
 
     function closeOverlay() {
@@ -367,9 +420,16 @@
         overlay().addClass('open');
         $('body').addClass('vas-open');
 
-        $.post(api + 'finish', { video_id: state.videoId, answers: JSON.stringify(state.answers) }, null, 'json')
+        var payload = { video_id: state.videoId, answers: JSON.stringify(state.answers) };
+        if (state.sets.length && state.activeSet !== null && state.activeSet !== undefined) {
+            var mine = {};
+            $.each(activeQuestions(), function (i, q) { if (state.answers[q.id] !== undefined) { mine[q.id] = state.answers[q.id]; } });
+            payload.answers = JSON.stringify(mine);
+            payload.set_id = state.activeSet;
+        }
+        $.post(api + 'finish', payload, null, 'json')
             .done(function (res) {
-                if (!res || res.status != 1) { return $card.html('<div class="vas-score"><h3>Could not save your score.</h3><button type="button" class="vas-btn" data-vas="close">Close</button></div>'); }
+                if (!res || res.status != 1) { return $card.html('<div class="vas-score"><h3>' + esc((res && res.msg) || 'Could not save your score.') + '</h3><button type="button" class="vas-btn" data-vas="close">Close</button></div>'); }
                 state.last = res;
                 var pct = res.total_marks > 0 ? res.score / res.total_marks : 0;
                 var stars = pct >= 0.9 ? 3 : (pct >= 0.6 ? 2 : (pct > 0 ? 1 : 0));
@@ -384,11 +444,23 @@
                         '<p>You answered ' + res.correct_count + ' of ' + res.question_count + ' questions correctly.</p>' +
                         '<div class="vas-score-actions">' +
                             '<button type="button" class="vas-btn vas-btn-ghost" data-vas="retry">&#8635; Try again</button>' +
-                            '<button type="button" class="vas-btn vas-btn-main" data-vas="close">Done</button>' +
+                            '<span data-vas-next><button type="button" class="vas-btn vas-btn-main" data-vas="close">Done</button></span>' +
                         '</div>' +
                     '</div>'
                 );
-                renderPanel();
+                if (state.sets.length) {
+                    // refresh level progress from the server, then offer the next level if it unlocked
+                    refreshSets(function () {
+                        var ids = $.map(state.sets, function (st) { return st.id; });
+                        var next = state.sets[ids.indexOf(state.activeSet) + 1];
+                        if (next && next.unlocked) {
+                            $card.find('[data-vas-next]').html('<button type="button" class="vas-btn vas-btn-main" data-vas="set-begin" data-set="' + next.id + '">Next: ' + esc(next.name) + ' &rarr;</button>');
+                        }
+                        renderPanel();
+                    });
+                } else {
+                    renderPanel();
+                }
             })
             .fail(function () { $card.html('<div class="vas-score"><h3>Could not save your score.</h3><button type="button" class="vas-btn" data-vas="close">Close</button></div>'); });
     }
@@ -426,9 +498,18 @@
         showQuestion(next);
     });
     $(document).on('click', '[data-vas="retry"]', function () {
+        if (state.sets.length && state.activeSet !== null && state.activeSet !== undefined) {
+            beginSet(state.activeSet);
+            return;
+        }
         state.answers = {}; state.results = {}; state.mode = 'quiz'; state.currentSet = null;
         renderPanel();
         showQuestion(state.questions[0]);
+    });
+    $(document).on('click', '[data-vas="set-begin"]', function () {
+        if (!state) { return; }
+        closeOverlay();
+        beginSet(parseInt($(this).data('set'), 10) || 0);
     });
     $(document).on('click', '[data-vas="close"]', function () {
         closeOverlay();
@@ -545,11 +626,20 @@
         submitAnswer(JSON.stringify(placed));
     });
 
+    function refreshSets(done) {
+        var my = state;
+        $.post(api + 'questions', { video_id: state.videoId }, null, 'json').done(function (res) {
+            if (my !== state || !res || res.status != 1) { return; }
+            state.sets = res.sets || [];
+            if (done) { done(); }
+        });
+    }
+
     /* ---------- public API ---------- */
     window.VAS = {
         start: function (videoId) {
             this.stop();
-            state = { videoId: videoId, questions: [], answers: {}, results: {}, mode: 'watch', ended: false, current: null, busy: false, last: null, sets: [], currentSet: null };
+            state = { videoId: videoId, questions: [], answers: {}, results: {}, mode: 'watch', ended: false, current: null, busy: false, last: null, sets: [], currentSet: null, activeSet: null };
             var my = state;
             $.post(api + 'questions', { video_id: videoId }, null, 'json').done(function (res) {
                 if (my !== state || !res || res.status != 1 || !res.questions.length) { return; }
@@ -566,7 +656,7 @@
                     var p = player();
                     if (!p) { if (tries++ < 20) { setTimeout(hook, 300); } return; }
                     p.on('timeupdate', function () {
-                        if (my !== state || state.current || state.mode !== 'watch') { return; }
+                        if (my !== state || state.current || state.mode !== 'watch' || state.sets.length) { return; }
                         var t = p.time();
                         for (var i = 0; i < state.questions.length; i++) {
                             var q = state.questions[i];
@@ -578,7 +668,7 @@
                         }
                     });
                     p.on('ended', function () {
-                        if (my !== state) { return; }
+                        if (my !== state || state.sets.length) { return; }
                         state.ended = true;
                         var next = nextQuestion();
                         if (next && !state.current) { state.mode = 'quiz'; showQuestion(next); }

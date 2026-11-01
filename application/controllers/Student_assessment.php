@@ -54,9 +54,16 @@ class Student_assessment extends CI_Controller {
             usort($keys, function ($a, $b) use ($order) { return $order[$a] === $order[$b] ? $a - $b : $order[$a] - $order[$b]; });
             $rows = array_map(function ($k) use ($rows) { return $rows[$k]; }, $keys);
             $sets = array_values(array_filter($sets, function ($st) { return $st['count'] > 0; }));
+            // questions without a set become a last "More questions" set when sets are used
+            if ($sets) {
+                $loose = 0;
+                foreach ($rows as $r) { if (!isset($set_pos[isset($r['set_id']) ? (int) $r['set_id'] : 0])) { $loose++; } }
+                if ($loose) { $sets[] = array('id' => 0, 'name' => 'More questions', 'count' => $loose); }
+            }
+            $sets = $this->set_progress($sets, $rows, $video['id']);
         }
         $set_names = array();
-        foreach ($sets as $st) { $set_names[$st['id']] = $st['name']; }
+        foreach ($sets as $st) { if ($st['id']) { $set_names[$st['id']] = $st['name']; } }
 
         $questions = array();
         $perms = (array) $this->session->userdata('vas_match_perm');
@@ -155,6 +162,25 @@ class Student_assessment extends CI_Controller {
 
         $score = 0; $total = 0; $right = 0; $detail = array();
         $questions = $this->active_questions($video['id']);
+
+        $set_id = $this->input->post('set_id');
+        if ($set_id !== NULL && $set_id !== '' && $this->db->table_exists('video_assessment_sets') && $this->db->field_exists('set_id', 'video_assessment_questions')) {
+            $set_id = (int) $set_id;
+            $info = $this->sets_for($video['id'], $questions);
+            $found = NULL;
+            foreach ($info as $st) { if ($st['id'] === $set_id) { $found = $st; } }
+            if (!$found) {
+                return $this->json(0, 'Set not found.');
+            }
+            if (!$found['unlocked']) {
+                return $this->json(0, 'Please finish the previous level first.');
+            }
+            $known = array_filter(array_column($info, 'id'));
+            $questions = array_values(array_filter($questions, function ($q) use ($set_id, $known) {
+                $sid = isset($q['set_id']) ? (int) $q['set_id'] : 0;
+                return $set_id ? $sid === $set_id : !in_array($sid, $known, TRUE);
+            }));
+        }
         foreach ($questions as $q) {
             $total += $q['marks'];
             $answer = isset($given[$q['id']]) ? $given[$q['id']] : NULL;
@@ -212,6 +238,72 @@ class Student_assessment extends CI_Controller {
         }
         $q = $this->db->where(array('id' => $id, 'status' => 1))->get('video_assessment_questions')->row_array();
         return ($q && $this->get_video((int) $q['video_id'])) ? $q : NULL;
+    }
+
+    /** Sets of a video (in order, with "More questions" last) including this student's progress. */
+    private function sets_for($video_id, $rows) {
+        $set_rows = $this->db->where('video_id', $video_id)->order_by('sort_order', 'asc')->order_by('id', 'asc')
+                             ->get('video_assessment_sets')->result_array();
+        $sets = array(); $ids = array();
+        foreach ($set_rows as $sr) { $ids[(int) $sr['id']] = TRUE; $sets[(int) $sr['id']] = array('id' => (int) $sr['id'], 'name' => $sr['name'], 'count' => 0); }
+        $loose = 0;
+        foreach ($rows as $r) {
+            $sid = isset($r['set_id']) ? (int) $r['set_id'] : 0;
+            if (isset($ids[$sid])) { $sets[$sid]['count']++; } else { $loose++; }
+        }
+        $sets = array_values(array_filter($sets, function ($st) { return $st['count'] > 0; }));
+        if ($sets && $loose) { $sets[] = array('id' => 0, 'name' => 'More questions', 'count' => $loose); }
+        return $this->set_progress($sets, $rows, $video_id);
+    }
+
+    /**
+     * Add done / best / unlocked to each set from this student's saved attempts.
+     * A set is done when one attempt answered all of its questions; the next set
+     * unlocks only after the previous one is done.
+     */
+    private function set_progress($sets, $rows, $video_id) {
+        if (!$sets) {
+            return $sets;
+        }
+        $known = array();
+        foreach ($sets as $st) { if ($st['id']) { $known[$st['id']] = TRUE; } }
+        $members = array(); $marks = array();
+        foreach ($rows as $r) {
+            $sid = isset($r['set_id']) ? (int) $r['set_id'] : 0;
+            $key = isset($known[$sid]) ? $sid : 0;
+            $members[$key][] = (int) $r['id'];
+            $marks[$key] = (isset($marks[$key]) ? $marks[$key] : 0) + (float) $r['marks'];
+        }
+        $attempts = array();
+        if ($this->db->table_exists('video_assessment_attempts')) {
+            foreach ($this->db->select('answers')->where(array('video_id' => $video_id, 'student_id' => $this->student_id))
+                              ->get('video_assessment_attempts')->result_array() as $a) {
+                $attempts[] = json_decode((string) $a['answers'], TRUE) ?: array();
+            }
+        }
+        $prev_done = TRUE;
+        foreach ($sets as $i => $st) {
+            $ids = isset($members[$st['id']]) ? $members[$st['id']] : array();
+            $done = FALSE; $best = NULL;
+            foreach ($attempts as $ans) {
+                $all = (bool) $ids;
+                $score = 0;
+                foreach ($ids as $qid) {
+                    if (!isset($ans[$qid]) || $ans[$qid]['answer'] === NULL) { $all = FALSE; break; }
+                    $score += isset($ans[$qid]['earned']) ? (float) $ans[$qid]['earned'] : 0;
+                }
+                if ($all) {
+                    $done = TRUE;
+                    if ($best === NULL || $score > $best) { $best = $score; }
+                }
+            }
+            $sets[$i]['marks']    = isset($marks[$st['id']]) ? $marks[$st['id']] : 0;
+            $sets[$i]['done']     = $done;
+            $sets[$i]['best']     = $best;
+            $sets[$i]['unlocked'] = $prev_done;
+            $prev_done = $done;
+        }
+        return $sets;
     }
 
     private function item($it) {
