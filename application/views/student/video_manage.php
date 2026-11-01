@@ -690,12 +690,13 @@ display: inline-block;
 .vl-head { text-align: center; }
 #subject-section .pcontainer { grid-template-columns: repeat(auto-fit, minmax(220px, 260px)); justify-content: center; }
 #topics-section .list-container ul { grid-template-columns: repeat(auto-fit, minmax(260px, 320px)); justify-content: center; }
-#titles-section .card-container { grid-template-columns: repeat(auto-fit, minmax(320px, 440px)); justify-content: center; gap: 28px; }
+#titles-section .card-container { grid-template-columns: repeat(auto-fit, minmax(420px, 600px)); justify-content: center; gap: 32px; }
 /* bigger video cards: thumbnail fills the card, larger title */
 #titles-section .video-card .thumbnail { padding: 0 !important; margin: 0 !important; border: 0 !important; aspect-ratio: 16 / 10; object-fit: cover; }
 #titles-section .video-card .thumbnail[src*="enkids_logo"] { object-fit: contain; padding: 20px !important; }
 #titles-section .video-info { padding: 18px 20px 20px; }
-#titles-section .video-info .title { font-size: 21px; }
+#titles-section .video-info .title { font-size: 24px; }
+@media (max-width: 991px) { #titles-section .card-container { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); } }
 #titles-section #titles-container li { justify-content: center; }
 @media (max-width: 767px) {
     #subject-section, #topics-section, #titles-section { padding: 92px 0 30px; }
