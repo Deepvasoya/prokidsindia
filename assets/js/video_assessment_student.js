@@ -121,7 +121,36 @@
         else if (d.webkitFullscreenElement && d.webkitExitFullscreen) { d.webkitExitFullscreen(); }
     }
 
+    function showIntro(next) {
+        var it = state.intro;
+        state.introShown = true;
+        state.current = { intro: true };
+        state.pausedForQuestion = true;
+        var p = player();
+        if (p) { p.pause(); }
+        exitFullscreen();
+        overlay().find('.vas-card').html(
+            '<div class="vas-intro">' +
+                '<span class="vas-step">&#128203; Before you start</span>' +
+                '<h3 class="vas-q">' + esc(it.title || 'Quiz time!') + '</h3>' +
+                (it.media ? '<div class="vas-q-media vas-q-media-' + it.media_type + '">' + media(it.media_type, it.media) + '</div>' : '') +
+                (it.text ? '<div class="vas-intro-text">' + esc(it.text).replace(/\n/g, '<br>') + '</div>' : '') +
+                '<div class="vas-intro-meta">' + state.questions.length + ' questions &middot; ' + num(totalMarks()) + ' marks</div>' +
+            '</div>' +
+            '<div class="vas-actions"><button type="button" class="vas-btn vas-btn-main" data-vas="intro-start">Let\'s start &rarr;</button></div>'
+        );
+        state.introNext = next;
+        overlay().addClass('open');
+        $('body').addClass('vas-open');
+    }
+    function totalMarks() {
+        var t = 0;
+        $.each(state.questions, function (i, q) { t += q.marks; });
+        return t;
+    }
+
     function showQuestion(q) {
+        if (state.intro && !state.introShown) { return showIntro(q); }
         state.current = q;
         state.pausedForQuestion = true;
         var p = player();
@@ -338,6 +367,13 @@
     });
     $(document).on('input', '.vas-input', function () { $(this).removeClass('is-wrong'); });
     $(document).on('click', '[data-vas="continue"]', onContinue);
+    $(document).on('click', '[data-vas="intro-start"]', function () {
+        if (!state || !state.introNext) { return; }
+        overlay().find('audio, video').each(function () { this.pause(); });
+        var next = state.introNext;
+        state.introNext = null;
+        showQuestion(next);
+    });
     $(document).on('click', '[data-vas="retry"]', function () {
         state.answers = {}; state.results = {}; state.mode = 'quiz';
         renderPanel();
@@ -468,6 +504,7 @@
                 if (my !== state || !res || res.status != 1 || !res.questions.length) { return; }
                 state.questions = $.map(res.questions, function (q) { q.marks = parseFloat(q.marks) || 0; return q; });
                 state.last = res.last_attempt;
+                state.intro = res.intro || null;
                 renderPanel();
 
                 // Hook the player once it exists (Plyr for YouTube is created on popup open).

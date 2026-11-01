@@ -33,6 +33,14 @@
 .va-stat.va-orange { background: #fff3dc; } .va-stat.va-orange strong { color: #f08a00; }
 .va-stat.va-green { background: #dff7ee; } .va-stat.va-green strong { color: #16a374; }
 .va-add-btn { align-self: flex-start; }
+.va-hero-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.va-intro-btn { background: #fff3dc !important; color: #b4610a !important; border: 2px solid #ffe2ad !important; box-shadow: none !important; font-weight: 700; }
+.va-intro-btn:hover { background: #ffe9c2 !important; }
+.va-intro-card { display: flex; gap: 16px; margin-bottom: 18px; padding: 18px 20px; border-radius: 20px; background: linear-gradient(120deg, #fff8ec, #fff); border: 2px dashed #ffe2ad; }
+.va-intro-card-icon { flex: 0 0 44px; height: 44px; border-radius: 14px; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 2px 6px rgba(31,42,77,.06); }
+.va-intro-card-body { flex: 1; min-width: 0; }
+.va-intro-text { color: #3f4a6b; font-weight: 600; line-height: 1.5; }
+.va-dialog.va-dialog-sm { max-width: min(760px, calc(100vw - 32px)); }
 
 .va-empty { text-align: center; background: #fff; border-radius: 22px; padding: 50px 20px; border: 2px dashed #e3e6f3; }
 .va-empty .va-empty-icon { font-size: 46px; }
@@ -168,9 +176,31 @@ body.va-modal-open { overflow: hidden; }
                 <div class="va-stat va-orange"><strong><?php echo count(array_filter($questions, function ($q) { return $q['status']; })); ?></strong><span>Active</span></div>
                 <div class="va-stat va-green"><strong><?php echo rtrim(rtrim(number_format($total_marks, 2), '0'), '.'); ?></strong><span>Total Marks</span></div>
             </div>
-            <button type="button" class="btn btn-primary va-add-btn" data-va-add>+ Add Question</button>
+            <div class="va-hero-actions">
+                <button type="button" class="btn btn-primary va-add-btn" data-va-add>+ Add Question</button>
+                <button type="button" class="btn va-intro-btn" data-va-intro>&#128203; Quiz introduction<?php echo !empty($intro) ? ' &#10003;' : ''; ?></button>
+            </div>
         </div>
     </div>
+
+    <?php if (!empty($intro)) { ?>
+        <div class="va-intro-card">
+            <div class="va-intro-card-icon">&#128203;</div>
+            <div class="va-intro-card-body">
+                <div class="va-tags"><span class="va-tag fill">Introduction &middot; shown before the quiz</span></div>
+                <?php if ($intro['title'] !== '') { ?><div class="va-qtext" style="margin-bottom:4px"><?php echo html_escape($intro['title']); ?></div><?php } ?>
+                <?php if ($intro['instructions'] !== '') { ?><div class="va-intro-text"><?php echo nl2br(html_escape($intro['instructions'])); ?></div><?php } ?>
+                <?php if ($intro['media']) { ?>
+                    <div class="va-media" style="margin:10px 0 0">
+                        <?php if ($intro['media_type'] === 'image') { ?><img src="<?php echo $media_url($intro['media']); ?>" alt="" loading="lazy">
+                        <?php } elseif ($intro['media_type'] === 'audio') { ?><audio src="<?php echo $media_url($intro['media']); ?>" controls preload="none"></audio>
+                        <?php } else { ?><video src="<?php echo $media_url($intro['media']); ?>" controls preload="none"></video><?php } ?>
+                    </div>
+                <?php } ?>
+            </div>
+            <div class="va-actions"><button type="button" class="va-icon-btn edit" title="Edit introduction" data-va-intro><i class="fa fa-edit"></i></button></div>
+        </div>
+    <?php } ?>
 
     <?php if (empty($questions)) { ?>
         <div class="va-empty">
@@ -253,6 +283,49 @@ body.va-modal-open { overflow: hidden; }
     <?php } ?>
 </div>
 </section>
+
+<!-- Quiz introduction -->
+<div class="va-modal" id="vaIntroModal" aria-hidden="true">
+    <div class="va-dialog va-dialog-sm" role="dialog" aria-modal="true" aria-labelledby="vaIntroTitle">
+        <button type="button" class="va-close" data-va-close aria-label="Close">&times;</button>
+        <h3 id="vaIntroTitle">Quiz introduction</h3>
+        <p class="va-hint" style="margin:-12px 0 18px">Students see this before the first question. Leave everything empty to remove it.</p>
+        <form id="vaIntroForm" enctype="multipart/form-data" novalidate>
+            <input type="hidden" name="video_id" value="<?php echo (int) $video['id']; ?>">
+            <div class="va-section">
+                <label class="va-label" for="vaIntroTitleInput">Title</label>
+                <input type="text" class="form-control" id="vaIntroTitleInput" name="intro_title" maxlength="255" autocomplete="off" placeholder="e.g. Let's play the Apple quiz!" value="<?php echo !empty($intro) ? html_escape($intro['title']) : ''; ?>">
+            </div>
+            <div class="va-section">
+                <label class="va-label" for="vaIntroText">Instructions</label>
+                <textarea class="form-control" id="vaIntroText" name="intro_instructions" rows="5" placeholder="e.g. Watch the video carefully. Tap the right picture. You can try again at the end!"><?php echo !empty($intro) ? html_escape($intro['instructions']) : ''; ?></textarea>
+            </div>
+            <div class="va-section">
+                <span class="va-label">Media (optional)</span>
+                <div class="va-seg">
+                    <?php $im = !empty($intro) ? $intro['media_type'] : 'none'; ?>
+                    <label><input type="radio" name="intro_media_type" value="none" <?php echo $im === 'none' ? 'checked' : ''; ?>><span>None</span></label>
+                    <label><input type="radio" name="intro_media_type" value="image" <?php echo $im === 'image' ? 'checked' : ''; ?>><span>&#128444;&#65039; Picture</span></label>
+                    <label><input type="radio" name="intro_media_type" value="audio" <?php echo $im === 'audio' ? 'checked' : ''; ?>><span>&#127925; Audio</span></label>
+                    <label><input type="radio" name="intro_media_type" value="video" <?php echo $im === 'video' ? 'checked' : ''; ?>><span>&#127916; Video</span></label>
+                </div>
+                <div id="vaIntroMediaWrap" style="display:none;margin-top:10px">
+                    <input type="file" class="form-control" name="intro_media_file" id="vaIntroMediaFile">
+                    <div class="va-file-preview" id="vaIntroPreview"><?php
+                        if (!empty($intro['media'])) {
+                            if ($intro['media_type'] === 'image') { echo '<img src="' . $media_url($intro['media']) . '" alt="">'; }
+                            elseif ($intro['media_type'] === 'audio') { echo '<audio src="' . $media_url($intro['media']) . '" controls></audio>'; }
+                            else { echo '<video src="' . $media_url($intro['media']) . '" controls></video>'; }
+                        } ?></div>
+                </div>
+            </div>
+            <div class="va-footer">
+                <button type="button" class="btn va-btn-ghost" data-va-close>Cancel</button>
+                <button type="submit" class="btn btn-primary" id="vaIntroSave">Save Introduction</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <!-- Add / edit question -->
 <div class="va-modal" id="vaModal" aria-hidden="true">
@@ -621,6 +694,42 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
+    /* ---- quiz introduction ---- */
+    var $intro = $('#vaIntroModal'), $introForm = $('#vaIntroForm');
+    function introRefresh() {
+        var kind = $introForm.find('[name="intro_media_type"]:checked').val();
+        $('#vaIntroMediaWrap').toggle(kind !== 'none');
+        if (accept[kind]) { $('#vaIntroMediaFile').attr('accept', accept[kind].attr); }
+    }
+    $(document).on('click', '[data-va-intro]', function () {
+        introRefresh();
+        $intro.addClass('open').attr('aria-hidden', 'false');
+        $('body').addClass('va-modal-open');
+        setTimeout(function () { $('#vaIntroTitleInput').trigger('focus'); }, 50);
+    });
+    $intro.on('click', '[data-va-close]', function () {
+        $intro.removeClass('open').attr('aria-hidden', 'true');
+        $('body').removeClass('va-modal-open');
+        $intro.find('video, audio').each(function () { this.pause(); });
+    });
+    $introForm.on('change', '[name="intro_media_type"]', introRefresh);
+    $('#vaIntroMediaFile').on('change', function () {
+        var f = this.files && this.files[0];
+        if (f) { $('#vaIntroPreview').html(mediaTag($introForm.find('[name="intro_media_type"]:checked').val(), URL.createObjectURL(f))); }
+    });
+    $introForm.on('submit', function (e) {
+        e.preventDefault();
+        var $btn = $('#vaIntroSave');
+        $btn.prop('disabled', true).text('Saving...');
+        $.ajax({ url: api + 'intro_save', type: 'POST', data: new FormData(this), processData: false, contentType: false, dataType: 'json' })
+            .done(function (res) {
+                notify(res.status == 1, res.msg);
+                if (res.status == 1) { setTimeout(function () { location.reload(); }, 500); }
+            })
+            .fail(function () { notify(false, 'Could not save. Please try again.'); })
+            .always(function () { $btn.prop('disabled', false).text('Save Introduction'); });
+    });
 
     refresh();
 });

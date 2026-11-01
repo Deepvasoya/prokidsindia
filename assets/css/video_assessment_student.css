@@ -255,3 +255,12 @@ audio.vas-card-media { width: 190px; }
 @media (max-width: 600px) {
     .vas-card { height: calc(100vh - 20px); height: calc(100dvh - 20px); }
 }
+
+/* Quiz introduction screen */
+.vas-intro { text-align: center; padding: 6px 4px; }
+.vas-intro .vas-step { display: inline-block; margin-bottom: 14px; }
+.vas-intro .vas-q { font-size: 28px; }
+.vas-intro-text { font-size: 18px; line-height: 1.6; color: #3f4a6b; font-weight: 600; text-align: left; background: #f7f8fe; border-radius: 18px; padding: 16px 20px; margin: 0 0 14px; }
+.vas-intro-meta { display: inline-block; padding: 6px 14px; border-radius: 999px; background: #fff3dc; color: #b4610a; font-weight: 800; font-size: 14px; }
+.vas-intro + .vas-actions { justify-content: center; }
+.vas-intro + .vas-actions .vas-btn { min-width: 220px; }

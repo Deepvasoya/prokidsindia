@@ -80,7 +80,16 @@ class Student_assessment extends CI_Controller {
                              ->get('video_assessment_attempts')->row_array();
         }
 
-        return $this->json(1, '', array('questions' => $questions, 'last_attempt' => $last ?: NULL));
+        $intro = NULL;
+        if ($this->db->table_exists('video_assessment_intro')) {
+            $row = $this->db->where('video_id', $video['id'])->get('video_assessment_intro')->row_array();
+            if ($row) {
+                $intro = array('title' => (string) $row['title'], 'text' => (string) $row['instructions'],
+                               'media_type' => $row['media_type'], 'media' => $row['media'] ? base_url($row['media']) : '');
+            }
+        }
+
+        return $this->json(1, '', array('questions' => $questions, 'last_attempt' => $last ?: NULL, 'intro' => $intro));
     }
 
     function check() {

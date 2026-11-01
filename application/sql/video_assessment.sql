@@ -38,3 +38,16 @@ CREATE TABLE IF NOT EXISTS `video_assessment_attempts` (
   PRIMARY KEY (`id`),
   KEY `idx_student_video` (`student_id`, `video_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Optional introduction / instructions shown to students before a video's quiz.
+CREATE TABLE IF NOT EXISTS `video_assessment_intro` (
+  `video_id`     INT NOT NULL,
+  `admin_id`     INT NOT NULL,
+  `title`        VARCHAR(255) NULL,
+  `instructions` TEXT NULL,
+  `media_type`   VARCHAR(10) NOT NULL DEFAULT 'none' COMMENT 'none | image | audio | video',
+  `media`        VARCHAR(255) NULL                   COMMENT 'path under uploads/video_assessment/',
+  `created_at`   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`   DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`video_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

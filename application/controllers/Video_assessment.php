@@ -15,6 +15,7 @@ class Video_assessment extends CI_Controller {
 
     const TABLE      = 'video_assessment_questions';
     const UPLOAD_DIR = 'uploads/video_assessment/';
+    const INTRO_TABLE = 'video_assessment_intro';
 
     /** Allowed extensions and max size (bytes) per media kind. */
     private $media_rules = array(
@@ -57,6 +58,7 @@ class Video_assessment extends CI_Controller {
         $header['title'] = 'Video Assessment';
         $data['video']     = $video;
         $data['questions'] = $this->get_questions($video['id']);
+        $data['intro']     = $this->get_intro($video['id']);
         $data['batch_name'] = '';
         $batch = $this->db_model->select_data('batch_name', 'batches', array('id' => $video['batch']), 1);
         if (!empty($batch)) {
@@ -272,6 +274,56 @@ class Video_assessment extends CI_Controller {
         return $this->json(1, $msg, array('id' => $id));
     }
 
+    /** Save the quiz introduction shown to students before the first question. */
+    function intro_save() {
+        if (!$this->db->table_exists(self::INTRO_TABLE)) {
+            return $this->json(0, 'Please run application/sql/video_assessment.sql first (table video_assessment_intro is missing).');
+        }
+        $post  = $this->input->post(NULL, TRUE);
+        $video = $this->get_video(isset($post['video_id']) ? (int) $post['video_id'] : 0);
+        if (!$video) {
+            return $this->json(0, 'Video not found.');
+        }
+        $existing = $this->get_intro($video['id']);
+        $title = isset($post['intro_title']) ? trim($post['intro_title']) : '';
+        $text  = isset($post['intro_instructions']) ? trim($post['intro_instructions']) : '';
+        $media_type = $this->pick(isset($post['intro_media_type']) ? $post['intro_media_type'] : 'none', array('none', 'image', 'audio', 'video'), 'none');
+
+        $media = $existing ? $existing['media'] : NULL;
+        $new_file = NULL;
+        if ($media_type === 'none') {
+            $media = NULL;
+        } elseif (!empty($_FILES['intro_media_file']['name'])) {
+            $up = $this->upload('intro_media_file', $media_type);
+            if (isset($up['error'])) {
+                return $this->json(0, 'Introduction media: ' . $up['error']);
+            }
+            $media = $new_file = $up['path'];
+        } elseif (!$existing || $existing['media_type'] !== $media_type) {
+            $media = NULL;
+        }
+        if ($media_type !== 'none' && !$media) {
+            return $this->json(0, 'Please upload the introduction ' . $media_type . '.');
+        }
+
+        // Empty introduction = remove it.
+        if ($title === '' && $text === '' && !$media) {
+            $this->db->where('video_id', $video['id'])->delete(self::INTRO_TABLE);
+            if ($existing) { $this->remove_files(array_filter(array($existing['media']))); }
+            return $this->json(1, 'Introduction removed.');
+        }
+
+        $row = array('video_id' => $video['id'], 'admin_id' => $this->owner_id, 'title' => $title,
+                     'instructions' => $text, 'media_type' => $media_type, 'media' => $media);
+        if ($existing) {
+            $this->db->where('video_id', $video['id'])->update(self::INTRO_TABLE, $row);
+            if ($existing['media'] && $existing['media'] !== $media) { $this->remove_files(array($existing['media'])); }
+        } else {
+            $this->db->insert(self::INTRO_TABLE, $row);
+        }
+        return $this->json(1, 'Introduction saved.');
+    }
+
     function delete() {
         $q = $this->get_question((int) $this->input->post('id'));
         if (!$q) {
@@ -316,6 +368,15 @@ class Video_assessment extends CI_Controller {
         $row = $this->db->select('id, title, url, video_type, batch, subject, topic, admin_id')
                         ->where(array('id' => $video_id, 'admin_id' => $this->owner_id))
                         ->get('video_lectures')->row_array();
+        return $row ?: NULL;
+    }
+
+    private function get_intro($video_id) {
+        if (!$this->db->table_exists(self::INTRO_TABLE)) {
+            return NULL;
+        }
+        $row = $this->db->where(array('video_id' => (int) $video_id, 'admin_id' => $this->owner_id))
+                        ->get(self::INTRO_TABLE)->row_array();
         return $row ?: NULL;
     }
 
