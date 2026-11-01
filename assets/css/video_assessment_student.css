@@ -309,3 +309,13 @@ audio.vas-card-media { width: 190px; }
 .vas-share-btn.is-fb { background: #1877f2; border-color: #1877f2; color: #fff; }
 .vas-share-msg { min-height: 18px; margin: 0; font-size: 13px; font-weight: 700; color: #11865c; }
 @media (max-width: 480px) { .vas-share-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Quiz progress bar */
+.vas-progress { display: flex; align-items: center; gap: 10px; margin: -4px 0 14px; }
+.vas-progress-steps { flex: 1; display: flex; gap: 5px; }
+.vas-progress-step { flex: 1; height: 10px; border-radius: 999px; background: #e6e8f2; transition: background .3s, box-shadow .3s; }
+.vas-progress-step.is-right { background: linear-gradient(90deg, #22c58b, #4ee0a8); }
+.vas-progress-step.is-wrong { background: linear-gradient(90deg, #ff6b6b, #ff8f8f); }
+.vas-progress-step.is-current:not(.is-right):not(.is-wrong) { background: #a5b0ff; box-shadow: 0 0 0 3px rgba(91, 108, 255, .2); animation: vasPulse 1.4s ease-in-out infinite; }
+.vas-progress-pct { flex: 0 0 auto; min-width: 40px; text-align: right; font-size: 13px; font-weight: 800; color: #4453e6; }
+@keyframes vasPulse { 50% { box-shadow: 0 0 0 5px rgba(91, 108, 255, .12); } }

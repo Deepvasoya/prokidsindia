@@ -279,6 +279,7 @@
             '<div class="vas-card-top"><span class="vas-step">Question ' + index + ' of ' + pool.length + '</span>' +
             (state.sets.length ? '<span class="vas-group">' + esc(q.set_name || 'More questions') + '</span>' : '') +
             '<span class="vas-marks">' + num(q.marks) + ' mark' + (q.marks == 1 ? '' : 's') + '</span></div>' +
+            progressBar(pool, q) +
             (q.text ? '<h3 class="vas-q">' + esc(q.text) + '</h3>' : '') +
             (q.media ? '<div class="vas-q-media vas-q-media-' + q.media_type + '">' + media(q.media_type, q.media) + '</div>' : '') +
             body +
@@ -301,6 +302,7 @@
                 if (!res || res.status != 1) { return fail(res && res.msg); }
                 state.answers[q.id] = answer;
                 state.results[q.id] = !!res.correct;
+                $card.find('.vas-progress').replaceWith(progressBar(activeQuestions(), q));
                 feedback(q, answer, res);
             })
             .fail(function () { fail(); })
@@ -371,6 +373,21 @@
     function activeQuestions() {
         if (state.activeSet === null || state.activeSet === undefined) { return state.questions; }
         return $.grep(state.questions, function (q) { return setKey(q) === state.activeSet; });
+    }
+    /** Bar with one step per question: green = right, red = wrong, glowing = current. */
+    function progressBar(pool, current) {
+        var done = 0;
+        var steps = $.map(pool, function (x) {
+            var cls = 'vas-progress-step';
+            if (state.results[x.id] !== undefined) { done++; cls += state.results[x.id] ? ' is-right' : ' is-wrong'; }
+            if (x === current) { cls += ' is-current'; }
+            return '<span class="' + cls + '"></span>';
+        }).join('');
+        var pct = pool.length ? Math.round(done / pool.length * 100) : 0;
+        return '<div class="vas-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '">' +
+                   '<div class="vas-progress-steps">' + steps + '</div>' +
+                   '<span class="vas-progress-pct">' + pct + '%</span>' +
+               '</div>';
     }
     function nextQuestion() {
         var list = activeQuestions();
