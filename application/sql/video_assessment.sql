@@ -67,3 +67,16 @@ CREATE TABLE IF NOT EXISTS `video_assessment_sets` (
 
 -- Run once (a "duplicate column" error just means it is already there).
 ALTER TABLE `video_assessment_questions` ADD COLUMN `set_id` INT NULL DEFAULT NULL AFTER `question_type`;
+
+-- Quiz sounds per video: background music while the quiz is open, and a sound
+-- for a right / wrong answer. Paths are under uploads/video_assessment/.
+CREATE TABLE IF NOT EXISTS `video_assessment_sounds` (
+  `video_id`      INT NOT NULL,
+  `admin_id`      INT NOT NULL,
+  `bg_music`      VARCHAR(255) NULL,
+  `correct_sound` VARCHAR(255) NULL,
+  `wrong_sound`   VARCHAR(255) NULL,
+  `created_at`    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`    DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`video_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

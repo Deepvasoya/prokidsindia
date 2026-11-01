@@ -123,7 +123,17 @@ class Student_assessment extends CI_Controller {
             }
         }
 
-        return $this->json(1, '', array('questions' => $questions, 'sets' => $sets, 'last_attempt' => $last ?: NULL, 'intro' => $intro));
+        $sounds = NULL;
+        if ($this->db->table_exists('video_assessment_sounds')) {
+            $row = $this->db->where('video_id', $video['id'])->get('video_assessment_sounds')->row_array();
+            if ($row) {
+                $sounds = array('bg'      => $row['bg_music'] ? base_url($row['bg_music']) : '',
+                                'correct' => $row['correct_sound'] ? base_url($row['correct_sound']) : '',
+                                'wrong'   => $row['wrong_sound'] ? base_url($row['wrong_sound']) : '');
+            }
+        }
+
+        return $this->json(1, '', array('questions' => $questions, 'sets' => $sets, 'last_attempt' => $last ?: NULL, 'intro' => $intro, 'sounds' => $sounds));
     }
 
     function check() {

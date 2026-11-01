@@ -17,6 +17,10 @@ class Video_assessment extends CI_Controller {
     const UPLOAD_DIR = 'uploads/video_assessment/';
     const INTRO_TABLE = 'video_assessment_intro';
     const SETS_TABLE  = 'video_assessment_sets';
+    const SOUNDS_TABLE = 'video_assessment_sounds';
+
+    /** Quiz sound fields => label used in messages. */
+    private $sound_fields = array('bg_music' => 'Background music', 'correct_sound' => 'Correct answer sound', 'wrong_sound' => 'Wrong answer sound');
 
     /** Allowed extensions and max size (bytes) per media kind. */
     private $media_rules = array(
@@ -60,6 +64,8 @@ class Video_assessment extends CI_Controller {
         $data['video']     = $video;
         $data['questions'] = $this->get_questions($video['id']);
         $data['intro']     = $this->get_intro($video['id']);
+        $data['sounds']    = $this->get_sounds($video['id']);
+        $data['sounds_ready'] = $this->db->table_exists(self::SOUNDS_TABLE);
         $data['sets']      = $this->get_sets($video['id']);
         $data['sets_ready'] = $this->sets_ready();
         $data['batch_name'] = '';
@@ -332,6 +338,47 @@ class Video_assessment extends CI_Controller {
         return $this->json(1, 'Introduction saved.');
     }
 
+    /** Upload / replace / remove the 3 quiz sounds of a video. */
+    function sounds_save() {
+        if (!$this->db->table_exists(self::SOUNDS_TABLE)) {
+            return $this->json(0, 'Please run application/sql/video_assessment.sql first (table video_assessment_sounds is missing).');
+        }
+        $video = $this->get_video((int) $this->input->post('video_id'));
+        if (!$video) {
+            return $this->json(0, 'Video not found.');
+        }
+        $existing = $this->get_sounds($video['id']);
+        $row = array('video_id' => $video['id'], 'admin_id' => $this->owner_id);
+        $old_files = array();
+        foreach ($this->sound_fields as $field => $label) {
+            $current = $existing ? $existing[$field] : NULL;
+            if (!empty($_FILES[$field]['name'])) {
+                $up = $this->upload($field, 'audio');
+                if (isset($up['error'])) {
+                    return $this->json(0, $label . ': ' . $up['error']);
+                }
+                $row[$field] = $up['path'];
+            } elseif ($this->input->post('remove_' . $field)) {
+                $row[$field] = NULL;
+            } else {
+                $row[$field] = $current;
+            }
+            if ($current && $current !== $row[$field]) {
+                $old_files[] = $current;
+            }
+        }
+
+        if (!$row['bg_music'] && !$row['correct_sound'] && !$row['wrong_sound']) {
+            $this->db->where('video_id', $video['id'])->delete(self::SOUNDS_TABLE);
+        } elseif ($existing) {
+            $this->db->where('video_id', $video['id'])->update(self::SOUNDS_TABLE, $row);
+        } else {
+            $this->db->insert(self::SOUNDS_TABLE, $row);
+        }
+        $this->remove_files($old_files);
+        return $this->json(1, 'Quiz sounds saved.');
+    }
+
     /** Create (no id) or rename (id) a set. */
     function set_save() {
         if (!$this->sets_ready()) {
@@ -469,6 +516,15 @@ class Video_assessment extends CI_Controller {
         }
         $row = $this->db->where(array('video_id' => (int) $video_id, 'admin_id' => $this->owner_id))
                         ->get(self::INTRO_TABLE)->row_array();
+        return $row ?: NULL;
+    }
+
+    private function get_sounds($video_id) {
+        if (!$this->db->table_exists(self::SOUNDS_TABLE)) {
+            return NULL;
+        }
+        $row = $this->db->where(array('video_id' => (int) $video_id, 'admin_id' => $this->owner_id))
+                        ->get(self::SOUNDS_TABLE)->row_array();
         return $row ?: NULL;
     }
 

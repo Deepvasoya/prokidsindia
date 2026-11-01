@@ -36,6 +36,14 @@
 .va-hero-actions { display: flex; flex-wrap: wrap; gap: 10px; }
 .va-intro-btn { background: #fff3dc !important; color: #b4610a !important; border: 2px solid #ffe2ad !important; box-shadow: none !important; font-weight: 700; }
 .va-intro-btn:hover { background: #ffe9c2 !important; }
+.va-sound-btn { background: #eef0ff !important; color: #4453e6 !important; border-color: #d9ddff !important; }
+.va-sound-btn:hover { background: #e2e6ff !important; }
+.va-sound-row { padding: 14px 16px; border-radius: 16px; border: 2px solid #eef0f7; margin-bottom: 12px; }
+.va-sound-row .va-label { display: flex; align-items: center; gap: 8px; }
+.va-sound-row .va-hint { margin: 2px 0 8px; }
+.va-sound-current { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+.va-sound-current audio { flex: 1; min-width: 200px; height: 36px; }
+.va-sound-current label { margin: 0; font-weight: 700; color: #d64545; cursor: pointer; }
 .va-intro-card { display: flex; gap: 16px; margin-bottom: 18px; padding: 18px 20px; border-radius: 20px; background: linear-gradient(120deg, #fff8ec, #fff); border: 2px dashed #ffe2ad; }
 .va-intro-card-icon { flex: 0 0 44px; height: 44px; border-radius: 14px; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 2px 6px rgba(31,42,77,.06); }
 .va-intro-card-body { flex: 1; min-width: 0; }
@@ -193,6 +201,7 @@ body.va-modal-open { overflow: hidden; }
                 <?php if ($sets_ready) { ?><button type="button" class="btn btn-primary va-add-btn" data-va-set-new>+ New Set</button><?php } ?>
                 <button type="button" class="btn btn-primary va-add-btn" data-va-add>+ Add Question</button>
                 <button type="button" class="btn va-intro-btn" data-va-intro>&#128203; Quiz introduction<?php echo !empty($intro) ? ' &#10003;' : ''; ?></button>
+                <?php if ($sounds_ready) { ?><button type="button" class="btn va-intro-btn va-sound-btn" data-va-sounds>&#127925; Quiz sounds<?php echo !empty($sounds) ? ' &#10003;' : ''; ?></button><?php } ?>
             </div>
         </div>
     </div>
@@ -361,6 +370,49 @@ body.va-modal-open { overflow: hidden; }
             <div class="va-footer">
                 <button type="button" class="btn va-btn-ghost" data-va-close>Cancel</button>
                 <button type="submit" class="btn btn-primary" id="vaSetSave">Save Set</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Quiz sounds -->
+<div class="va-modal" id="vaSoundModal" aria-hidden="true">
+    <div class="va-dialog va-dialog-sm" role="dialog" aria-modal="true" aria-labelledby="vaSoundTitle">
+        <button type="button" class="va-close" data-va-close aria-label="Close">&times;</button>
+        <h3 id="vaSoundTitle">Quiz sounds</h3>
+        <p class="va-hint" style="margin:-12px 0 18px">Audio files: mp3, wav, ogg, m4a or aac. Each one is optional.</p>
+        <form id="vaSoundForm" enctype="multipart/form-data" novalidate>
+            <input type="hidden" name="video_id" value="<?php echo (int) $video['id']; ?>">
+            <div class="va-sound-row">
+                <label class="va-label" for="vaSnd_bg_music">&#127926; Background music</label>
+                <p class="va-hint">Plays softly (on repeat) while the student does the quiz.</p>
+                <input type="file" class="form-control" name="bg_music" id="vaSnd_bg_music" accept=".mp3,.wav,.ogg,.m4a,.aac,audio/*" data-va-sound-file>
+                <div class="va-sound-current" data-va-sound-preview><?php if (!empty($sounds['bg_music'])) { ?>
+                    <audio src="<?php echo $media_url($sounds['bg_music']); ?>" controls preload="none"></audio>
+                    <label><input type="checkbox" name="remove_bg_music" value="1"> Remove</label>
+                <?php } ?></div>
+            </div>
+            <div class="va-sound-row">
+                <label class="va-label" for="vaSnd_correct_sound">&#9989; Correct answer sound</label>
+                <p class="va-hint">Plays when the answer is right.</p>
+                <input type="file" class="form-control" name="correct_sound" id="vaSnd_correct_sound" accept=".mp3,.wav,.ogg,.m4a,.aac,audio/*" data-va-sound-file>
+                <div class="va-sound-current" data-va-sound-preview><?php if (!empty($sounds['correct_sound'])) { ?>
+                    <audio src="<?php echo $media_url($sounds['correct_sound']); ?>" controls preload="none"></audio>
+                    <label><input type="checkbox" name="remove_correct_sound" value="1"> Remove</label>
+                <?php } ?></div>
+            </div>
+            <div class="va-sound-row">
+                <label class="va-label" for="vaSnd_wrong_sound">&#10060; Wrong answer sound</label>
+                <p class="va-hint">Plays when the answer is wrong.</p>
+                <input type="file" class="form-control" name="wrong_sound" id="vaSnd_wrong_sound" accept=".mp3,.wav,.ogg,.m4a,.aac,audio/*" data-va-sound-file>
+                <div class="va-sound-current" data-va-sound-preview><?php if (!empty($sounds['wrong_sound'])) { ?>
+                    <audio src="<?php echo $media_url($sounds['wrong_sound']); ?>" controls preload="none"></audio>
+                    <label><input type="checkbox" name="remove_wrong_sound" value="1"> Remove</label>
+                <?php } ?></div>
+            </div>
+            <div class="va-footer">
+                <button type="button" class="btn va-btn-ghost" data-va-close>Cancel</button>
+                <button type="submit" class="btn btn-primary" id="vaSoundSave">Save Sounds</button>
             </div>
         </form>
     </div>
@@ -867,6 +919,32 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .fail(function () { notify(false, 'Could not save. Please try again.'); })
             .always(function () { $btn.prop('disabled', false).text('Save Introduction'); });
+    });
+
+    /* ---- quiz sounds ---- */
+    var $sound = $('#vaSoundModal'), $soundForm = $('#vaSoundForm');
+    $(document).on('click', '[data-va-sounds]', function () {
+        $sound.addClass('open').attr('aria-hidden', 'false');
+    });
+    $sound.on('click', '[data-va-close]', function () {
+        $sound.removeClass('open').attr('aria-hidden', 'true');
+        $sound.find('audio').each(function () { this.pause(); });
+    });
+    $soundForm.on('change', '[data-va-sound-file]', function () {
+        var f = this.files && this.files[0];
+        if (f) { $(this).siblings('[data-va-sound-preview]').html('<audio src="' + URL.createObjectURL(f) + '" controls></audio>'); }
+    });
+    $soundForm.on('submit', function (e) {
+        e.preventDefault();
+        var $btn = $('#vaSoundSave');
+        $btn.prop('disabled', true).text('Saving...');
+        $.ajax({ url: api + 'sounds_save', type: 'POST', data: new FormData(this), processData: false, contentType: false, dataType: 'json' })
+            .done(function (res) {
+                notify(res.status == 1, res.msg);
+                if (res.status == 1) { setTimeout(function () { location.reload(); }, 500); }
+            })
+            .fail(function () { notify(false, 'Could not save. Please try again.'); })
+            .always(function () { $btn.prop('disabled', false).text('Save Sounds'); });
     });
 
     refresh();

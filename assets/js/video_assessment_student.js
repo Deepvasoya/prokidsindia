@@ -162,6 +162,57 @@
         return $o;
     }
 
+    /* ---------- quiz sounds (uploaded by the admin) ---------- */
+    var bgAudio = null;
+    function soundsMuted() {
+        try { return localStorage.getItem('vasMuted') === '1'; } catch (e) { return false; }
+    }
+    function musicButton() {
+        var $o = overlay(), $b = $o.children('.vas-mute');
+        if (!state || !state.sounds || !state.sounds.bg) { $b.remove(); return; }
+        if (!$b.length) { $b = $('<button type="button" class="vas-mute" data-vas="mute"></button>').prependTo($o); }
+        var off = soundsMuted();
+        $b.html(off ? '&#128263;' : '&#128266;').attr('title', off ? 'Turn music on' : 'Turn music off').toggleClass('is-off', off);
+    }
+    /** Background music: plays (on repeat) while quiz screens are open. */
+    function music(on) {
+        var src = state && state.sounds && state.sounds.bg;
+        if (on && src && !soundsMuted()) {
+            if (!bgAudio || bgAudio.getAttribute('src') !== src) {
+                if (bgAudio) { bgAudio.pause(); }
+                bgAudio = new Audio(src);
+                bgAudio.setAttribute('src', src);
+                bgAudio.loop = true;
+                bgAudio.volume = 0.3;
+            }
+            if (bgAudio.paused) { var pr = bgAudio.play(); if (pr && pr.catch) { pr.catch(function () {}); } }
+        } else if (bgAudio) {
+            bgAudio.pause();
+        }
+        musicButton();
+    }
+    function playEffect(correct) {
+        var src = state && state.sounds && (correct ? state.sounds.correct : state.sounds.wrong);
+        if (!src || soundsMuted()) { return; }
+        var fx = new Audio(src);
+        fx.volume = 0.9;
+        if (bgAudio && !bgAudio.paused) {
+            // dip the music while the effect plays
+            bgAudio.volume = 0.08;
+            fx.addEventListener('ended', function () { if (bgAudio) { bgAudio.volume = 0.3; } });
+        }
+        var pr = fx.play(); if (pr && pr.catch) { pr.catch(function () {}); }
+    }
+    // Quiet the music while a question's own audio / video plays.
+    document.addEventListener('play', function (e) {
+        if (bgAudio && e.target !== bgAudio && $(e.target).closest('#vasOverlay').length) { bgAudio.volume = 0.05; }
+    }, true);
+    $.each(['pause', 'ended'], function (i, ev) {
+        document.addEventListener(ev, function (e) {
+            if (bgAudio && e.target !== bgAudio && $(e.target).closest('#vasOverlay').length) { bgAudio.volume = 0.3; }
+        }, true);
+    });
+
     function exitFullscreen() {
         var d = document;
         if (d.fullscreenElement && d.exitFullscreen) { d.exitFullscreen().catch(function () {}); }
@@ -219,6 +270,7 @@
     }
 
     function showQuestion(q) {
+        music(true);
         if (state.intro && !state.introShown) { return showIntro(q); }
         // Quiz mode with sets: announce each new set before its first question.
         if (state.sets.length && state.mode === 'quiz' && state.currentSet !== setKey(q)) {
@@ -302,6 +354,7 @@
                 if (!res || res.status != 1) { return fail(res && res.msg); }
                 state.answers[q.id] = answer;
                 state.results[q.id] = !!res.correct;
+                playEffect(!!res.correct);
                 $card.find('.vas-progress').replaceWith(progressBar(activeQuestions(), q));
                 feedback(q, answer, res);
             })
@@ -426,12 +479,14 @@
             return;
         }
         state.pausedForQuestion = false;
+        music(false);
         var p = player();
         if (p) { p.play(); }
     }
 
     function finish() {
         state.mode = 'quiz';
+        music(true);
         var $card = overlay().find('.vas-card');
         $card.html('<div class="vas-score"><div class="vas-score-emoji">&#9203;</div><h3>Checking your answers...</h3></div>');
         overlay().addClass('open');
@@ -532,7 +587,12 @@
     });
     $(document).on('click', '[data-vas="close"]', function () {
         closeOverlay();
+        music(false);
         state.mode = 'watch';
+    });
+    $(document).on('click', '[data-vas="mute"]', function () {
+        try { localStorage.setItem('vasMuted', soundsMuted() ? '0' : '1'); } catch (e) {}
+        music(!soundsMuted());
     });
 
     /* ---------- share my score ---------- */
@@ -820,6 +880,7 @@
                 state.questions = $.map(res.questions, function (q) { q.marks = parseFloat(q.marks) || 0; return q; });
                 state.last = res.last_attempt;
                 state.intro = res.intro || null;
+                state.sounds = res.sounds || null;
                 state.sets = res.sets || [];
                 renderPanel();
 
@@ -851,6 +912,7 @@
             });
         },
         stop: function () {
+            music(false);
             state = null;
             closeOverlay();
             $('#vasPanel').remove();
