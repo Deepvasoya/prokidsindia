@@ -239,3 +239,19 @@ audio.vas-card-media { width: 190px; }
     .vas-card .vas-actions,
     .vas-card .vas-feedback:not(:empty) { margin-left: -16px; margin-right: -16px; padding: 12px 16px 16px; bottom: -20px; margin-bottom: -20px; }
 }
+
+/* Same popup height for every question (short ones leave space, tall ones scroll inside) */
+.vas-card {
+    display: flex;
+    flex-direction: column;
+    height: min(680px, calc(100vh - 48px));
+    height: min(680px, calc(100dvh - 48px));
+}
+.vas-card > * { flex-shrink: 0; }
+.vas-card > .vas-actions,
+.vas-card > .vas-feedback:not(:empty) { margin-top: auto; }
+.vas-card > .vas-actions ~ .vas-feedback:not(:empty) { margin-top: 0; }
+.vas-card > .vas-score { margin: auto 0; }
+@media (max-width: 600px) {
+    .vas-card { height: calc(100vh - 20px); height: calc(100dvh - 20px); }
+}
