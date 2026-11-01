@@ -2224,7 +2224,7 @@ class Admin_profile extends CI_Controller {
 		  	$data_arr['name'] = $filesop[0];
 			$enrolid =  $filesop[1];
 			$data_arr['enrollment_id'] = $filesop[1];
-			$password = $filesop[2]; 
+			$password = $filesop[2];
             $data_arr['password'] = md5($password);
             $data_arr['contact_no'] = $password;
             
@@ -2233,9 +2233,9 @@ class Admin_profile extends CI_Controller {
             $data_arr['admission_date'] = date('Y-m-d');
             //$data_arr['dob'] = date('Y-m-d',strtotime($filesop[4]));
             $data_arr['status'] = 1;
-            $data_arr['student_state']= $filesop[3];
-            $data_arr['student_city']= $filesop[4];
-            $multi_batch_id = $filesop[5];
+            $data_arr['student_state']= $filesop[4];
+            $data_arr['student_city']= $filesop[5];
+            $multi_batch_id = $filesop[3];
             
             if($multi_batch_id !=''){
                 $batch_id = explode(",", $multi_batch_id);
@@ -2295,11 +2295,11 @@ class Admin_profile extends CI_Controller {
         // file creation
         $file = fopen('php://output', 'w');
  
-        $header = array("name","enrollment_id","password","school","student_city","batch_id");
+        $header = array("name","enrollment_id","password","batch_id","school","student_city");
         fputcsv($file, $header);
         
         foreach ($myData as $key){
-            $narray=array($key["name"],$key["enrollment_id"],$key["password"],$key["school"],$key["student_city"],$key["batch_id"]);
+            $narray=array($key["name"],$key["enrollment_id"],$key["password"],$key["batch_id"],$key["school"],$key["student_city"]);
             fputcsv($file, $narray);
         }
  
