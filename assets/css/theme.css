@@ -1953,3 +1953,4 @@ body.student-panel #view_video_popup .number-item.active { color: #1f2a4d !impor
 
 /* Select2 dropdowns: show the whole list (no 200px limit with inner scrollbar) */
 .select2-container--default .select2-results > .select2-results__options { max-height: none !important; }
+body.student-panel #view_video_popup #viewVideoTopic::before { content: none !important; }
