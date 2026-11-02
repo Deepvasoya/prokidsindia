@@ -342,3 +342,10 @@ audio.vas-card-media { width: 190px; }
     .vas-levels-pop .vas-level { flex-direction: column; align-items: stretch; }
     .vas-levels-pop .vas-level-btn { width: 100%; }
 }
+
+/* level rows: give the name the free space (it was squeezed to one letter per line) */
+.vas-level-info { flex: 1 1 auto; }
+.vas-level-info > div { flex: 1 1 auto; min-width: 0; }
+.vas-level-info b { word-break: normal; overflow-wrap: anywhere; }
+.vas-level-score, .vas-level-meta { white-space: nowrap; }
+.vas-level-btn { white-space: nowrap; }
