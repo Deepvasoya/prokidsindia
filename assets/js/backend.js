@@ -9007,9 +9007,8 @@ $('#view_video_popup .videoIframeShow').html(html);
     $(document).on('click', '.addAdminPop, .edit_admin', function() {
          
         if ($(this).hasClass('addAdminPop')) {
-            if (($('#input_feilds_admin').find('[name="admin_image"]').hasClass('require')) == false) {
-                $('#input_feilds_admin').find('[name="admin_image"]').addClass('require');
-            }
+            // profile image is optional for sub-admins
+            $('#input_feilds_admin').find('[name="admin_image"]').removeClass('require');
             $('#input_feilds_admin').find('form').trigger('reset');
             $('#input_feilds_admin').find('#PopupTitle').html('add user');
             $('#input_feilds_admin').find('.addAdmin').attr('data-id', '').val('add user');

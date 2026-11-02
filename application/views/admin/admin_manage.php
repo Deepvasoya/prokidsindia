@@ -74,8 +74,8 @@
                      </div> 
                     <div class="col-lg-6 col-md-12 col-sm-12 col-12">
                         <div class="form-group">
-                            <label><?php echo html_escape($this->common->languageTranslator('ltr_image'));?><sup>*</sup></label>
-                            <input type="file" class="form-control require" name="admin_image" data-valid="image" data-error="<?php echo html_escape($this->common->languageTranslator('ltr_valid_image_msg'));?>">
+                            <label><?php echo html_escape($this->common->languageTranslator('ltr_image'));?> (optional)</label>
+                            <input type="file" class="form-control" name="admin_image" data-valid="image" data-error="<?php echo html_escape($this->common->languageTranslator('ltr_valid_image_msg'));?>">
                             <p class="fileNameShow"></p>
                         </div>
                     </div>
