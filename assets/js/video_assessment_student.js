@@ -104,34 +104,16 @@
             : '';
 
         if (state.sets.length) {
-            // Level-wise: each set has its own button; a set unlocks after the previous one is done.
-            var prevName = '';
-            var rowsHtml = $.map(state.sets, function (st, i) {
-                var btn;
-                if (!st.unlocked) {
-                    btn = '<button type="button" class="vas-btn vas-level-btn is-locked" disabled title="Finish ' + esc(prevName) + ' first">&#128274; Locked</button>';
-                } else if (st.done) {
-                    btn = '<button type="button" class="vas-btn vas-btn-ghost vas-level-btn" data-vas="set-begin" data-set="' + st.id + '">&#8635; Play again</button>';
-                } else {
-                    btn = '<button type="button" class="vas-btn vas-btn-main vas-level-btn" data-vas="set-begin" data-set="' + st.id + '">Start &#9654;</button>';
-                }
-                var status = st.done
-                    ? '<span class="vas-level-score">&#9989; ' + num(st.best || 0) + ' / ' + num(st.marks) + '</span>'
-                    : (st.unlocked ? '<span class="vas-level-meta">' + st.count + ' question' + (st.count == 1 ? '' : 's') + '</span>'
-                                   : '<span class="vas-level-meta">Finish ' + esc(prevName) + ' first</span>');
-                prevName = st.name;
-                return '<div class="vas-level' + (st.done ? ' is-done' : '') + (st.unlocked ? '' : ' is-locked') + '">' +
-                           '<div class="vas-level-info"><span class="vas-level-no">' + (i + 1) + '</span><div><b>' + esc(st.name) + '</b>' + status + '</div></div>' +
-                           btn +
-                       '</div>';
-            }).join('');
+            // Level-wise: the panel only has a Quiz button; the levels open in a popup.
+            var doneSets = $.grep(state.sets, function (st) { return st.done; }).length;
             panel().html(
                 '<div class="vas-panel-body">' +
                     '<h4>Quiz time!</h4>' +
-                    '<p>' + state.sets.length + ' levels &middot; finish each level to unlock the next</p>' +
+                    '<p>' + state.sets.length + ' levels' + (doneSets ? ' &middot; ' + doneSets + ' done' : '') + '</p>' +
                 '</div>' +
-                '<div class="vas-levels">' + rowsHtml + '</div>'
+                '<button type="button" class="vas-btn vas-btn-main" data-vas="levels">&#127919; Quiz</button>'
             ).show();
+            if (overlay().hasClass('open') && overlay().find('.vas-levels-pop').length) { showLevels(); }
             return;
         }
 
@@ -245,6 +227,46 @@
         var t = 0;
         $.each(state.questions, function (i, q) { t += q.marks; });
         return t;
+    }
+
+    /** Popup with every level: Start / Play again / Locked (a level opens after the previous one is done). */
+    function showLevels() {
+        var prevName = '';
+        var rowsHtml = $.map(state.sets, function (st, i) {
+            var btn;
+            if (!st.unlocked) {
+                btn = '<button type="button" class="vas-btn vas-level-btn is-locked" disabled title="Finish ' + esc(prevName) + ' first">&#128274; Locked</button>';
+            } else if (st.done) {
+                btn = '<button type="button" class="vas-btn vas-btn-ghost vas-level-btn" data-vas="set-begin" data-set="' + st.id + '">&#8635; Play again</button>';
+            } else {
+                btn = '<button type="button" class="vas-btn vas-btn-main vas-level-btn" data-vas="set-begin" data-set="' + st.id + '">Start &#9654;</button>';
+            }
+            var status = st.done
+                ? '<span class="vas-level-score">&#9989; ' + num(st.best || 0) + ' / ' + num(st.marks) + '</span>'
+                : (st.unlocked ? '<span class="vas-level-meta">' + st.count + ' question' + (st.count == 1 ? '' : 's') + '</span>'
+                               : '<span class="vas-level-meta">Finish ' + esc(prevName) + ' first</span>');
+            prevName = st.name;
+            return '<div class="vas-level' + (st.done ? ' is-done' : '') + (st.unlocked ? '' : ' is-locked') + '">' +
+                       '<div class="vas-level-info"><span class="vas-level-no">' + (i + 1) + '</span><div><b>' + esc(st.name) + '</b>' + status + '</div></div>' +
+                       btn +
+                   '</div>';
+        }).join('');
+        var p = player(); if (p) { p.pause(); }
+        exitFullscreen();
+        state.current = { levels: true };
+        overlay().find('.vas-card').html(
+            '<div class="vas-levels-pop">' +
+                '<div class="vas-levels-head">' +
+                    '<div class="vas-levels-icon">&#127919;</div>' +
+                    '<h3>Quiz time!</h3>' +
+                    '<p>' + state.sets.length + ' levels &middot; finish each level to unlock the next</p>' +
+                '</div>' +
+                '<div class="vas-levels">' + rowsHtml + '</div>' +
+                '<div class="vas-levels-foot"><button type="button" class="vas-btn vas-btn-ghost" data-vas="close">Close</button></div>' +
+            '</div>'
+        );
+        overlay().addClass('open');
+        $('body').addClass('vas-open');
     }
 
     function setKey(q) { return q.set_id || 0; }
@@ -580,6 +602,7 @@
         renderPanel();
         showQuestion(state.questions[0]);
     });
+    $(document).on('click', '[data-vas="levels"]', function () { if (state && state.sets.length) { showLevels(); } });
     $(document).on('click', '[data-vas="set-begin"]', function () {
         if (!state) { return; }
         closeOverlay();
