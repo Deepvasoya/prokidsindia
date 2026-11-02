@@ -638,7 +638,9 @@ display: inline-block;
 #subject-section .grid-item .image img { width: auto; max-width: 100%; height: 100%; object-fit: contain; border-radius: 14px; transition: transform .25s ease; }
 #subject-section .pcontainer > a:hover .grid-item .image img { transform: scale(1.06) rotate(-2deg); }
 #subject-section .grid-item .content { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 16px 18px; font-family: inherit; }
-#subject-section .grid-item .content h5 { margin: 0; color: #1f2a4d !important; font-family: var(--pk-font-head, inherit); font-size: 19px; font-weight: 600; }
+#subject-section .grid-item .content h5 { margin: 0; color: #1f2a4d !important; font-family: var(--pk-font-head, inherit); font-size: 19px; font-weight: 600; flex: 1; text-align: center; }
+/* empty twin of the arrow so the name sits in the true centre */
+#subject-section .grid-item .content:before { content: ""; flex: 0 0 34px; }
 #subject-section .grid-item .content:after {
     content: "\2192"; flex: 0 0 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
     background: var(--soft); color: var(--c); font-weight: 800; transition: transform .2s ease, background .2s ease, color .2s ease;
