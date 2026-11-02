@@ -628,6 +628,23 @@
             ' in the ' + (d.video ? '"' + d.video + '" ' : '') + 'quiz' + (d.level ? ' – ' + d.level : '') +
             ' on ProKids India! 🎉';
     }
+    /**
+     * Save the card on the server so it gets its own page (/score/<code>). WhatsApp and
+     * Facebook show that page's picture as the link preview, so the card goes with the text.
+     */
+    function saveCard(canvas) {
+        var my = state;
+        state.shareLink = null;
+        $.post(api + 'save_card', {
+            video_id: state.videoId,
+            image: canvas.toDataURL('image/jpeg', 0.85),
+            text: shareText()
+        }, null, 'json').done(function (res) {
+            if (my === state && res && res.status == 1 && res.url) { state.shareLink = res.url; }
+        });
+    }
+    /** Link put in shared messages: the card's own page when saved, else the site. */
+    function shareUrl() { return (state && state.shareLink) || siteUrl(); }
     function siteUrl() {
         var a = document.createElement('a'); a.href = base_url; return a.protocol + '//' + a.host + '/';
     }
@@ -720,6 +737,7 @@
             var canvas = drawShareCard(bgImg);
             state.shareImage = canvas.toDataURL('image/png');
             state.shareBlob = dataUrlToBlob(state.shareImage);
+            saveCard(canvas);
             $card.find('.vas-score').hide();
             $card.find('.vas-share').remove();
             $card.append(
@@ -787,13 +805,13 @@
             name: 'WhatsApp',
             phoneLink: function (t) { return 'https://wa.me/?text=' + encodeURIComponent(t); },
             webLink: function (t) { return 'https://web.whatsapp.com/send?text=' + encodeURIComponent(t); },
-            paste: 'Picture copied! Pick a chat in WhatsApp and press Ctrl+V to paste it, then send.'
+            paste: 'Pick a chat and send: the link shows your score card picture. (The picture is also copied: Ctrl+V pastes it.)'
         },
         facebook: {
             name: 'Facebook',
             phoneLink: function (t, u) { return 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(u); },
-            webLink: function () { return 'https://www.facebook.com/'; },
-            paste: 'Picture copied! In Facebook click "What\'s on your mind?" and press Ctrl+V to paste it.'
+            webLink: function (t, u) { return 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(u); },
+            paste: 'Facebook shows your score card from the link. (The picture is also copied: Ctrl+V pastes it.)'
         },
         instagram: {
             name: 'Instagram',
@@ -803,8 +821,13 @@
         }
     };
     function shareTo(key) {
-        var app = apps[key], text = shareText(), url = siteUrl(), full = text + ' ' + url;
+        var app = apps[key], text = shareText(), url = shareUrl(), full = text + ' ' + url;
         var saveAndOpen = function () {
+            if (state.shareLink && key !== 'instagram') {
+                // the link's preview already shows the picture
+                shareStatus('Send the message in ' + app.name + ': the link shows your score card picture.');
+                return openApp((isPhone ? app.phoneLink : app.webLink)(full, url));
+            }
             downloadCard();
             shareStatus('Picture saved as "my-quiz-score.png". Now add it in ' + app.name + ' (tap 📎 / + and choose the picture).');
             openApp((isPhone ? app.phoneLink : app.webLink)(full, url));
@@ -829,7 +852,7 @@
     });
     $(document).on('click', '[data-vas-share]', function () {
         if (!state || !state.last) { return; }
-        var kind = $(this).data('vas-share'), text = shareText(), url = siteUrl();
+        var kind = $(this).data('vas-share'), text = shareText(), url = shareUrl();
         var saved = function () { downloadCard(); shareStatus('Picture saved! Post it on any app you like.'); };
         if (kind === 'native') {
             if (shareImageFile(saved)) { return; }

@@ -219,6 +219,43 @@ class Student_assessment extends CI_Controller {
         ));
     }
 
+    /**
+     * POST video_id, image (JPEG data URL of the score card), text.
+     * Saves the card so it has a public link (/score/<code>) whose preview shows the picture.
+     */
+    function save_card() {
+        $video = $this->get_video((int) $this->input->post('video_id'));
+        if (!$video) {
+            return $this->json(0, 'Video not found.');
+        }
+        $data = (string) $this->input->post('image');
+        if (strpos($data, 'data:image/jpeg;base64,') !== 0 || strlen($data) > 4 * 1024 * 1024) {
+            return $this->json(0, 'Invalid picture.');
+        }
+        $bin = base64_decode(substr($data, 23), TRUE);
+        $size = $bin ? @getimagesizefromstring($bin) : FALSE;
+        if (!$size || $size[2] !== IMAGETYPE_JPEG) {
+            return $this->json(0, 'Invalid picture.');
+        }
+        $dir = FCPATH . 'uploads/video_assessment/cards/';
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0775, TRUE);
+        }
+        $code = bin2hex(random_bytes(12));
+        if (!@file_put_contents($dir . $code . '.jpg', $bin)) {
+            return $this->json(0, 'Could not save the picture.');
+        }
+        $text = trim(strip_tags((string) $this->input->post('text')));
+        @file_put_contents($dir . $code . '.json', json_encode(array(
+            'title'      => 'My quiz score',
+            'text'       => mb_substr($text, 0, 300),
+            'student_id' => $this->student_id,
+            'video_id'   => (int) $video['id'],
+            'created'    => date('Y-m-d H:i:s'),
+        ), JSON_UNESCAPED_UNICODE));
+        return $this->json(1, '', array('url' => base_url('score/' . $code)));
+    }
+
     /* ------------------------------------------------------------------ helpers */
 
     /** Background picture the admin set for the score card ('' = default colours). */
