@@ -715,18 +715,71 @@
         return new Blob([arr], { type: 'image/png' });
     }
     /** Share the picture itself through the phone's share menu. Returns false when the browser can't share files. */
-    function shareImageFile() {
-        if (!navigator.share || !navigator.canShare || !state.shareBlob || !window.File) { return false; }
+    // Phones/tablets have a share menu that lists WhatsApp, Instagram, Facebook...; computers usually don't.
+    var isPhone = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
+                  (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
+
+    /** Phone: share the picture through the share menu. Returns false when that isn't possible here. */
+    function shareImageFile(onFail) {
+        if (!isPhone || !navigator.share || !navigator.canShare || !state.shareBlob || !window.File) { return false; }
         var file = new File([state.shareBlob], 'my-quiz-score.png', { type: 'image/png' });
         if (!navigator.canShare({ files: [file] })) { return false; }
-        navigator.share({ files: [file], text: shareText() }).catch(function () {});
+        navigator.share({ files: [file], text: shareText() }).catch(function (err) {
+            // closed by the student = fine; any other error = fall back
+            if (!err || err.name !== 'AbortError') { onFail(); }
+        });
         return true;
     }
-    function nativeShare(onFail) {
-        if (shareImageFile()) { return; }
-        if (navigator.share) { return navigator.share({ text: shareText(), url: siteUrl(), title: 'My quiz score' }).catch(function () {}); }
-        onFail();
+    /** Computer: put the picture on the clipboard so it can be pasted (Ctrl+V) in WhatsApp Web / Facebook. */
+    function copyImage(done, fail) {
+        if (!navigator.clipboard || !navigator.clipboard.write || !window.ClipboardItem || !window.isSecureContext) { return fail(); }
+        try {
+            navigator.clipboard.write([new ClipboardItem({ 'image/png': state.shareBlob })]).then(done, fail);
+        } catch (e) { fail(); }
     }
+    function openApp(link) { window.open(link, '_blank', 'noopener'); }
+
+    var apps = {
+        whatsapp: {
+            name: 'WhatsApp',
+            phoneLink: function (t) { return 'https://wa.me/?text=' + encodeURIComponent(t); },
+            webLink: function (t) { return 'https://web.whatsapp.com/send?text=' + encodeURIComponent(t); },
+            paste: 'Picture copied! Pick a chat in WhatsApp and press Ctrl+V to paste it, then send.'
+        },
+        facebook: {
+            name: 'Facebook',
+            phoneLink: function (t, u) { return 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(u); },
+            webLink: function () { return 'https://www.facebook.com/'; },
+            paste: 'Picture copied! In Facebook click "What\'s on your mind?" and press Ctrl+V to paste it.'
+        },
+        instagram: {
+            name: 'Instagram',
+            phoneLink: function () { return 'https://www.instagram.com/'; },
+            webLink: function () { return 'https://www.instagram.com/'; },
+            paste: null
+        }
+    };
+    function shareTo(key) {
+        var app = apps[key], text = shareText(), url = siteUrl(), full = text + ' ' + url;
+        var saveAndOpen = function () {
+            downloadCard();
+            shareStatus('Picture saved as "my-quiz-score.png". Now add it in ' + app.name + ' (tap 📎 / + and choose the picture).');
+            openApp((isPhone ? app.phoneLink : app.webLink)(full, url));
+        };
+        if (isPhone) {
+            if (shareImageFile(saveAndOpen)) { shareStatus('Pick ' + app.name + ' from the list to share your score card.'); return; }
+            return saveAndOpen();
+        }
+        if (!app.paste) { return saveAndOpen(); }
+        // open the app window right away (inside the click) so pop-up blockers allow it
+        var win = window.open(app.webLink(full, url), '_blank');
+        copyImage(function () { shareStatus(app.paste); }, function () {
+            downloadCard();
+            shareStatus('Picture saved as "my-quiz-score.png". Attach it in ' + app.name + ' (📎).');
+            if (!win) { openApp(app.webLink(full, url)); }
+        });
+    }
+
     $(document).on('click', '[data-vas="share"]', function () { if (state && state.last) { openShare(); } });
     $(document).on('click', '[data-vas="share-back"]', function () {
         var $card = overlay().find('.vas-card');
@@ -736,24 +789,15 @@
     $(document).on('click', '[data-vas-share]', function () {
         if (!state || !state.last) { return; }
         var kind = $(this).data('vas-share'), text = shareText(), url = siteUrl();
+        var saved = function () { downloadCard(); shareStatus('Picture saved! Post it on any app you like.'); };
         if (kind === 'native') {
-            nativeShare(function () { downloadCard(); shareStatus('Image saved. Post it on any app you like!'); });
-        } else if (kind === 'whatsapp') {
-            // A WhatsApp link can only carry text, so send the picture through the share menu (pick WhatsApp there).
-            if (shareImageFile()) { shareStatus('Choose WhatsApp to send your score card.'); return; }
-            downloadCard();
-            shareStatus('Image saved! In WhatsApp tap 📎 and attach "my-quiz-score.png".');
-            window.open('https://wa.me/?text=' + encodeURIComponent(text + ' ' + url), '_blank');
-        } else if (kind === 'facebook') {
-            if (shareImageFile()) { shareStatus('Choose Facebook to post your score card.'); return; }
-            downloadCard();
-            shareStatus('Image saved! Add "my-quiz-score.png" to your Facebook post.');
-            window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url) + '&quote=' + encodeURIComponent(text), '_blank');
-        } else if (kind === 'instagram') {
-            // Instagram has no web share link: use the phone's share sheet, or save the image to post it.
-            nativeShare(function () { downloadCard(); shareStatus('Image saved! Open Instagram and add it to your post or story.'); });
+            if (shareImageFile(saved)) { return; }
+            if (isPhone && navigator.share) { navigator.share({ text: text, url: url }).catch(function () {}); return; }
+            copyImage(function () { shareStatus('Picture copied! Paste it (Ctrl+V) in any chat or post.'); }, saved);
+        } else if (apps[kind]) {
+            shareTo(kind);
         } else if (kind === 'download') {
-            downloadCard(); shareStatus('Image saved!');
+            downloadCard(); shareStatus('Picture saved!');
         } else if (kind === 'copy') {
             var done = function () { shareStatus('Text copied! Paste it anywhere.'); };
             if (navigator.clipboard && window.isSecureContext) {
