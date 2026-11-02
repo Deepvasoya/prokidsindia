@@ -693,13 +693,14 @@ display: inline-block;
 /* flex so every row, the last one too, sits in the middle */
 #subject-section .pcontainer { display: flex !important; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 100%; margin: 0 auto; }
 #subject-section .pcontainer > a { flex: 0 1 240px; display: block; }
-#topics-section .list-container ul { grid-template-columns: repeat(auto-fit, minmax(260px, 320px)); justify-content: center; }
+#topics-section .list-container ul { display: flex !important; flex-wrap: wrap; justify-content: center; }
+#topics-section .list-container ul li { flex: 0 1 300px; justify-content: center; text-align: center; padding-left: 46px; padding-right: 46px; }
 #titles-section .card-container { grid-template-columns: repeat(auto-fit, minmax(420px, 600px)); justify-content: center; gap: 32px; }
 /* bigger video cards: thumbnail fills the card, larger title */
 #titles-section .video-card .thumbnail { padding: 0 !important; margin: 0 !important; border: 0 !important; aspect-ratio: 16 / 10; object-fit: cover; }
 #titles-section .video-card .thumbnail[src*="enkids_logo"] { object-fit: contain; padding: 20px !important; }
 #titles-section .video-info { padding: 18px 20px 20px; }
-#titles-section .video-info .title { font-size: 24px; }
+#titles-section .video-info .title { font-size: 24px; text-align: center; }
 @media (max-width: 991px) { #titles-section .card-container { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); } }
 #titles-section #titles-container li { justify-content: center; }
 @media (max-width: 767px) {
@@ -712,7 +713,7 @@ display: inline-block;
     #subject-section .grid-item .content { padding: 12px; }
     #subject-section .grid-item .content h5 { font-size: 15px; }
     #subject-section .grid-item .content:after { display: none; }
-    #topics-section .list-container ul { grid-template-columns: 1fr; }
+    #topics-section .list-container ul li { flex-basis: 100%; }
     #titles-section .video-info .title { font-size: 14px; }
 }
 </style>
