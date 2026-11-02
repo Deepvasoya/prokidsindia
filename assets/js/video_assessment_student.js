@@ -725,7 +725,8 @@
         ctx.fillText(new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) + '  •  ' + siteUrl().replace(/^https?:\/\//, '').replace(/\/$/, ''), W / 2, H - 70);
         return c;
     }
-    function shareStatus(msg) { overlay().find('[data-vas-share-msg]').text(msg); }
+    function shareStatus(msg) { overlay().find('[data-vas-share-steps]').empty(); overlay().find('[data-vas-share-msg]').text(msg); }
+    function shareSteps(html) { overlay().find('[data-vas-share-msg]').text(''); overlay().find('[data-vas-share-steps]').html(html); }
     function downloadCard() {
         var a = document.createElement('a');
         a.href = state.shareImage; a.download = 'my-quiz-score.png';
@@ -753,6 +754,7 @@
                         '<button type="button" class="vas-share-btn" data-vas-share="copy">&#128203; Copy text</button>' +
                     '</div>' +
                     '<p class="vas-share-msg" data-vas-share-msg></p>' +
+                    '<div class="vas-share-steps" data-vas-share-steps></div>' +
                     '<button type="button" class="vas-btn vas-btn-ghost" data-vas="share-back">&larr; Back</button>' +
                 '</div>'
             );
@@ -781,8 +783,8 @@
                   (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
 
     /** Phone: share the picture through the share menu. Returns false when that isn't possible here. */
-    function shareImageFile(onFail) {
-        if (!isPhone || !navigator.share || !navigator.canShare || !state.shareBlob || !window.File) { return false; }
+    function shareImageFile(onFail, anyDevice) {
+        if ((!isPhone && !anyDevice) || !navigator.share || !navigator.canShare || !state.shareBlob || !window.File) { return false; }
         var file = new File([state.shareBlob], 'my-quiz-score.png', { type: 'image/png' });
         if (!navigator.canShare({ files: [file] })) { return false; }
         navigator.share({ files: [file], text: shareText() }).catch(function (err) {
@@ -836,12 +838,24 @@
             if (shareImageFile(saveAndOpen)) { shareStatus('Pick ' + app.name + ' from the list to share your score card.'); return; }
             return saveAndOpen();
         }
-        if (!app.paste) { return saveAndOpen(); }
-        // copy first (the page must still have focus), then open the app in a new tab
+        // Computer: show clear steps; the app opens from a button so the steps stay visible.
+        var link = app.webLink(full, url);
+        var openBtn = '<a class="vas-btn vas-btn-main vas-steps-open" href="' + esc(link) + '" target="_blank" rel="noopener">Open ' + app.name + ' &rarr;</a>';
+        var dlBtn = '<button type="button" class="vas-btn vas-btn-ghost" data-vas-share="download">&#11015; Download picture</button>';
         copyImage(function () {
-            shareStatus(app.paste);
-            openApp(app.webLink(full, url));
-        }, saveAndOpen);
+            shareSteps('<b>&#9989; Your score card picture is copied.</b>' +
+                '<ol><li>Click <b>Open ' + app.name + '</b></li>' +
+                (key === 'whatsapp' ? '<li>Choose the chat</li><li>Press <b>Ctrl + V</b> to paste the picture, then <b>Send</b></li>'
+                                    : '<li>Click in the post box</li><li>Press <b>Ctrl + V</b> to paste the picture, then <b>Post</b></li>') +
+                '</ol>' + '<div class="vas-steps-btns">' + openBtn + dlBtn + '</div>');
+        }, function () {
+            downloadCard();
+            shareSteps('<b>&#9989; Your score card picture is downloaded</b> (my-quiz-score.png).' +
+                '<ol><li>Click <b>Open ' + app.name + '</b></li>' +
+                (key === 'whatsapp' ? '<li>Choose the chat</li><li>Click <b>&#128206;</b> &rarr; <b>Photos &amp; videos</b> and pick <b>my-quiz-score.png</b>, then <b>Send</b></li>'
+                                    : '<li>Click <b>Photo/video</b> and pick <b>my-quiz-score.png</b>, then <b>Post</b></li>') +
+                '</ol>' + '<div class="vas-steps-btns">' + openBtn + dlBtn + '</div>');
+        });
     }
 
     $(document).on('click', '[data-vas="share"]', function () { if (state && state.last) { openShare(); } });
@@ -855,7 +869,7 @@
         var kind = $(this).data('vas-share'), text = shareText(), url = shareUrl();
         var saved = function () { downloadCard(); shareStatus('Picture saved! Post it on any app you like.'); };
         if (kind === 'native') {
-            if (shareImageFile(saved)) { return; }
+            if (shareImageFile(saved, true)) { return; }
             if (isPhone && navigator.share) { navigator.share({ text: text, url: url }).catch(function () {}); return; }
             copyImage(function () { shareStatus('Picture copied! Paste it (Ctrl+V) in any chat or post.'); }, saved);
         } else if (apps[kind]) {
