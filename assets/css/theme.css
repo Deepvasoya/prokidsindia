@@ -1967,3 +1967,13 @@ body.student-panel #view_video_popup .video-section .videoIframeShow { margin: 0
 body.student-panel #view_video_popup .video-section .videoIframeShow video,
 body.student-panel #view_video_popup .video-section .videoIframeShow iframe,
 body.student-panel #view_video_popup .video-section .videoIframeShow .plyr { margin: 0 auto; border-radius: 16px; }
+/* no black strips beside the video: the player takes the video's own shape,
+   and any leftover space shows the box colour instead of black */
+body.student-panel #view_video_popup .videoIframeShow,
+body.student-panel #view_video_popup .videoIframeShow .plyr,
+body.student-panel #view_video_popup .videoIframeShow .plyr__video-wrapper { background: transparent !important; }
+body.student-panel #view_video_popup .videoIframeShow video {
+    aspect-ratio: auto !important; height: auto !important; width: 100% !important;
+    max-height: calc(100vh - 150px); object-fit: contain; background: transparent !important;
+}
+body.student-panel #view_video_popup .videoIframeShow iframe { background: transparent !important; }
