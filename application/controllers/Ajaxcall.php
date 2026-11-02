@@ -13722,6 +13722,7 @@ error_reporting(E_ALL);*/
                         $data_arr1['parent_id'] =  $this->session->userdata('uid');   
                         $data_arr1['admin_id'] = '1'; 
                         $data_arr1['status'] =  1;
+                        $data_arr1['teach_image'] = ''; // image is optional
                         if(isset($_FILES['admin_image']) && !empty($_FILES['admin_image']['name'])){
                             $image = $this->upload_media($_FILES,'uploads/admin/','admin_image');
                             if(is_array($image)){
