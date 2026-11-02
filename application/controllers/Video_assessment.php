@@ -18,6 +18,7 @@ class Video_assessment extends CI_Controller {
     const INTRO_TABLE = 'video_assessment_intro';
     const SETS_TABLE  = 'video_assessment_sets';
     const SOUNDS_TABLE = 'video_assessment_sounds';
+    const SETTINGS_TABLE = 'video_assessment_settings';
 
     /** Quiz sound fields => label used in messages. */
     private $sound_fields = array('bg_music' => 'Background music', 'correct_sound' => 'Correct answer sound', 'wrong_sound' => 'Wrong answer sound');
@@ -377,6 +378,40 @@ class Video_assessment extends CI_Controller {
         }
         $this->remove_files($old_files);
         return $this->json(1, 'Quiz sounds saved.');
+    }
+
+    /** Site settings: background picture of the student's score card (all quizzes). */
+    function card_bg_save() {
+        if ($this->session->userdata('role') != 1) {
+            return $this->json(0, 'Only admins can change this.');
+        }
+        if (!$this->db->table_exists(self::SETTINGS_TABLE)) {
+            return $this->json(0, 'Please run application/sql/video_assessment.sql first (table video_assessment_settings is missing).');
+        }
+        $row = $this->db->where('name', 'score_card_bg')->get(self::SETTINGS_TABLE)->row_array();
+        $current = $row ? $row['value'] : NULL;
+
+        if (!empty($_FILES['score_card_bg']['name'])) {
+            $up = $this->upload('score_card_bg', 'image');
+            if (isset($up['error'])) {
+                return $this->json(0, 'Background picture: ' . $up['error']);
+            }
+            $value = $up['path'];
+        } elseif ($this->input->post('remove_score_card_bg')) {
+            $value = NULL;
+        } else {
+            return $this->json(0, 'Please choose a picture.');
+        }
+
+        if ($row) {
+            $this->db->where('name', 'score_card_bg')->update(self::SETTINGS_TABLE, array('value' => $value));
+        } else {
+            $this->db->insert(self::SETTINGS_TABLE, array('name' => 'score_card_bg', 'value' => $value));
+        }
+        if ($current && $current !== $value) {
+            $this->remove_files(array($current));
+        }
+        return $this->json(1, $value ? 'Score card background saved.' : 'Score card background removed.');
     }
 
     /** Create (no id) or rename (id) a set. */

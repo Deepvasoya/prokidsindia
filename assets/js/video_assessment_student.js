@@ -623,7 +623,7 @@
         ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
     }
     /** Draws a 1080x1350 picture card (good for Instagram, WhatsApp status and Facebook). */
-    function drawShareCard() {
+    function drawShareCard(bgImg) {
         var r = state.last, d = r.share || {};
         var W = 1080, H = 1350, font = '"Fredoka", "Nunito", "Segoe UI", Arial, sans-serif';
         var c = document.createElement('canvas'); c.width = W; c.height = H;
@@ -631,15 +631,24 @@
         var bg = ctx.createLinearGradient(0, 0, W, H);
         bg.addColorStop(0, '#5b6cff'); bg.addColorStop(0.55, '#8b5cf6'); bg.addColorStop(1, '#ff5c8a');
         ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
-        // confetti dots
-        var colors = ['#ffd84d', '#4ee0a8', '#ffffff', '#ff9f43', '#7dd3fc'];
-        for (var i = 0; i < 60; i++) {
-            ctx.globalAlpha = 0.35; ctx.fillStyle = colors[i % colors.length];
-            ctx.beginPath(); ctx.arc((i * 197) % W, (i * 331) % H, 6 + (i % 5) * 3, 0, Math.PI * 2); ctx.fill();
+        if (bgImg) {
+            // admin's background picture, cropped to fill the card
+            var sc = Math.max(W / bgImg.naturalWidth, H / bgImg.naturalHeight);
+            var iw = bgImg.naturalWidth * sc, ih = bgImg.naturalHeight * sc;
+            ctx.drawImage(bgImg, (W - iw) / 2, (H - ih) / 2, iw, ih);
+            // darker strips so the top and bottom text stays readable
+            ctx.fillStyle = 'rgba(15, 23, 42, .35)'; ctx.fillRect(0, 0, W, 150); ctx.fillRect(0, H - 150, W, 150);
+        } else {
+            // confetti dots
+            var colors = ['#ffd84d', '#4ee0a8', '#ffffff', '#ff9f43', '#7dd3fc'];
+            for (var i = 0; i < 60; i++) {
+                ctx.globalAlpha = 0.35; ctx.fillStyle = colors[i % colors.length];
+                ctx.beginPath(); ctx.arc((i * 197) % W, (i * 331) % H, 6 + (i % 5) * 3, 0, Math.PI * 2); ctx.fill();
+            }
+            ctx.globalAlpha = 1;
         }
-        ctx.globalAlpha = 1;
-        // white card
-        ctx.fillStyle = '#ffffff'; roundRect(ctx, 70, 150, W - 140, H - 300, 48); ctx.fill();
+        // white card (lets the picture show through a little)
+        ctx.fillStyle = bgImg ? 'rgba(255, 255, 255, .9)' : '#ffffff'; roundRect(ctx, 70, 150, W - 140, H - 300, 48); ctx.fill();
         ctx.textAlign = 'center';
         ctx.fillStyle = '#ffffff'; ctx.font = '700 54px ' + font; ctx.fillText('ProKids India', W / 2, 105);
 
@@ -684,8 +693,8 @@
     }
     function openShare() {
         var $card = overlay().find('.vas-card');
-        var go = function () {
-            var canvas = drawShareCard();
+        var go = function (bgImg) {
+            var canvas = drawShareCard(bgImg);
             state.shareImage = canvas.toDataURL('image/png');
             state.shareBlob = dataUrlToBlob(state.shareImage);
             $card.find('.vas-score').hide();
@@ -707,7 +716,18 @@
                 '</div>'
             );
         };
-        if (document.fonts && document.fonts.ready) { document.fonts.ready.then(go); } else { go(); }
+        var bgUrl = state.last.share && state.last.share.bg;
+        var withBg = function () {
+            if (!bgUrl) { return go(null); }
+            $card.find('.vas-score').hide();
+            $card.find('.vas-share').remove();
+            $card.append('<div class="vas-share"><h3>Making your score card...</h3></div>');
+            var img = new Image();
+            img.onload = function () { go(img); };
+            img.onerror = function () { go(null); };
+            img.src = bgUrl;
+        };
+        if (document.fonts && document.fonts.ready) { document.fonts.ready.then(withBg); } else { withBg(); }
     }
     function dataUrlToBlob(url) {
         var parts = url.split(','), bin = atob(parts[1]), arr = new Uint8Array(bin.length);

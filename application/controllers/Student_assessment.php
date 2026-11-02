@@ -221,6 +221,15 @@ class Student_assessment extends CI_Controller {
 
     /* ------------------------------------------------------------------ helpers */
 
+    /** Background picture the admin set for the score card ('' = default colours). */
+    private function score_card_bg() {
+        if (!$this->db->table_exists('video_assessment_settings')) {
+            return '';
+        }
+        $row = $this->db->where('name', 'score_card_bg')->get('video_assessment_settings')->row_array();
+        return ($row && $row['value']) ? base_url($row['value']) : '';
+    }
+
     /** Details shown on the student's "share my score" card. */
     private function share_info($video, $level) {
         $student = $this->db->select('name, student_state, student_city')->where('id', $this->student_id)
@@ -234,6 +243,7 @@ class Student_assessment extends CI_Controller {
             'class'  => $batch ? trim($batch['batch_name']) : '',
             'video'  => $lecture ? trim($lecture['title']) : '',
             'level'  => (string) $level,
+            'bg'     => $this->score_card_bg(),
         );
     }
 

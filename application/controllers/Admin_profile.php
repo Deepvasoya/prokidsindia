@@ -930,6 +930,11 @@ class Admin_profile extends CI_Controller {
 		$header['title']=$this->lang->line('ltr_site_settings');
 		$data['site_Details'] = $this->db_model->select_data('*','site_details',array('id'=>'1'),1);
 		$data['state_list'] = $this->db_model->select_data('*','tbl_state','','');
+		$data['score_card_bg'] = '';
+		if ($this->db->table_exists('video_assessment_settings')) {
+			$bg = $this->db->where('name', 'score_card_bg')->get('video_assessment_settings')->row_array();
+			$data['score_card_bg'] = ($bg && $bg['value']) ? $bg['value'] : '';
+		}
 		
 		$this->load->view("common/admin_header",$header);
 		$this->load->view("admin/front/site_settings",$data); 

@@ -214,6 +214,59 @@
 						</div>
 					</div>
 				</form>
-			</div>		
+			</div>
+			<div class="pxn_admin_informationdiv edu_main_wrapper sc-bg-card">
+				<h4 class="edu_sub_title">&#127942; Quiz score card background</h4>
+				<p class="sc-bg-hint">Students see this picture behind their score when they share a quiz result (WhatsApp, Instagram, Facebook). Best size: 1080 &times; 1350 px (portrait). JPG, PNG or WEBP, up to 5 MB.</p>
+				<form id="scoreCardBgForm" enctype="multipart/form-data" novalidate>
+					<div class="sc-bg-row">
+						<div class="sc-bg-preview" id="scoreCardBgPreview"><?php if (!empty($score_card_bg)) { ?><img src="<?php echo base_url($score_card_bg); ?>" alt="Score card background"><?php } else { ?><span>Default colours</span><?php } ?></div>
+						<div class="sc-bg-actions">
+							<input type="file" class="form-control" name="score_card_bg" id="scoreCardBgFile" accept=".jpg,.jpeg,.png,.webp,image/*">
+							<div class="sc-bg-buttons">
+								<button type="submit" class="btn btn-primary" id="scoreCardBgSave">Save picture</button>
+								<?php if (!empty($score_card_bg)) { ?><button type="button" class="btn btn-danger" id="scoreCardBgRemove">Remove</button><?php } ?>
+							</div>
+						</div>
+					</div>
+				</form>
+			</div>
+<style>
+.sc-bg-card { margin-top: 24px; }
+.sc-bg-hint { color: #6b7493; margin: -6px 0 16px; }
+.sc-bg-row { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
+.sc-bg-preview { flex: 0 0 160px; height: 200px; border-radius: 16px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #5b6cff, #8b5cf6 55%, #ff5c8a); color: #fff; font-weight: 700; }
+.sc-bg-preview img { width: 100%; height: 100%; object-fit: cover; }
+.sc-bg-actions { flex: 1; min-width: 240px; display: flex; flex-direction: column; gap: 12px; }
+.sc-bg-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var $ = window.jQuery, api = '<?php echo base_url('video_assessment/card_bg_save'); ?>';
+    function send(data, $btn, label) {
+        $btn.prop('disabled', true).text('Saving...');
+        $.ajax({ url: api, type: 'POST', data: data, processData: false, contentType: false, dataType: 'json' })
+            .done(function (res) {
+                if (window.toastr) { toastr[res.status == 1 ? 'success' : 'error'](res.msg); } else { alert(res.msg); }
+                if (res.status == 1) { setTimeout(function () { location.reload(); }, 600); }
+            })
+            .fail(function () { if (window.toastr) { toastr.error('Could not save. Please try again.'); } })
+            .always(function () { $btn.prop('disabled', false).text(label); });
+    }
+    $('#scoreCardBgFile').on('change', function () {
+        var f = this.files && this.files[0];
+        if (f) { $('#scoreCardBgPreview').html('<img src="' + URL.createObjectURL(f) + '" alt="">'); }
+    });
+    $('#scoreCardBgForm').on('submit', function (e) {
+        e.preventDefault();
+        send(new FormData(this), $('#scoreCardBgSave'), 'Save picture');
+    });
+    $('#scoreCardBgRemove').on('click', function () {
+        if (!confirm('Remove the score card background?')) { return; }
+        var fd = new FormData(); fd.append('remove_score_card_bg', '1');
+        send(fd, $(this), 'Remove');
+    });
+});
+</script>		
 	</div>
 </section>

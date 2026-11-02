@@ -80,3 +80,12 @@ CREATE TABLE IF NOT EXISTS `video_assessment_sounds` (
   `updated_at`    DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`video_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Quiz settings shared by all videos (e.g. score_card_bg = background picture of
+-- the student's "share my score" card, path under uploads/video_assessment/).
+CREATE TABLE IF NOT EXISTS `video_assessment_settings` (
+  `name`       VARCHAR(64) NOT NULL,
+  `value`      TEXT NULL,
+  `updated_at` DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
