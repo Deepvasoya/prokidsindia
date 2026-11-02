@@ -1954,3 +1954,16 @@ body.student-panel #view_video_popup .number-item.active { color: #1f2a4d !impor
 /* Select2 dropdowns: show the whole list (no 200px limit with inner scrollbar) */
 .select2-container--default .select2-results > .select2-results__options { max-height: none !important; }
 body.student-panel #view_video_popup #viewVideoTopic::before { content: none !important; }
+
+/* Student video popup: video sits in a soft box that fills the space up to the
+   numbers panel, video centred inside; small gap between the two boxes */
+body.student-panel #view_video_popup .video-content { gap: 14px; align-items: stretch; }
+body.student-panel #view_video_popup .video-section {
+    display: flex !important; align-items: center; justify-content: center;
+    padding: 14px !important; border-radius: 20px;
+    background: #f7f8fe; border: 1px solid #eceefa;
+}
+body.student-panel #view_video_popup .video-section .videoIframeShow { margin: 0 auto; background: transparent; }
+body.student-panel #view_video_popup .video-section .videoIframeShow video,
+body.student-panel #view_video_popup .video-section .videoIframeShow iframe,
+body.student-panel #view_video_popup .video-section .videoIframeShow .plyr { margin: 0 auto; border-radius: 16px; }
