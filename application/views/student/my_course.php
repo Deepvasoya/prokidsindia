@@ -28,7 +28,8 @@
 .mc-wave { display: inline-block; animation: mc-wave 2.4s ease-in-out infinite; transform-origin: 70% 70%; }
 @keyframes mc-wave { 0%,60%,100% { transform: rotate(0); } 10%,30% { transform: rotate(16deg); } 20%,40% { transform: rotate(-8deg); } }
 
-.mc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 24px; }
+.mc-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; }
+.mc-grid > .mc-card { flex: 0 1 260px; }
 .mc-card {
     --c: #5b6cff; --soft: #eef0ff;
     position: relative; display: flex; flex-direction: column; overflow: hidden;
@@ -56,7 +57,7 @@
 }
 .mc-card:hover .mc-cover img { transform: scale(1.06) rotate(-2deg); }
 .mc-badge {
-    position: absolute; top: 14px; left: 14px; padding: 5px 12px; border-radius: 999px;
+    position: absolute; z-index: 2; top: 12px; left: 12px; padding: 5px 12px; border-radius: 999px;
     background: #22c58b; color: #fff; font-size: 12px; font-weight: 800; box-shadow: 0 4px 10px rgba(34,197,139,.35);
 }
 .mc-body { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 14px; flex: 1; }
@@ -82,7 +83,8 @@
     .mc-wrap { padding: 16px 0 30px; }
     .mc-hero { padding: 22px 20px; }
     .mc-hero h2 { font-size: 23px; }
-    .mc-grid { grid-template-columns: 1fr; gap: 16px; }
+    .mc-grid { gap: 16px; }
+    .mc-grid > .mc-card { flex-basis: 100%; }
 }
 @media (prefers-reduced-motion: reduce) { .mc-wave { animation: none; } }
 </style>
