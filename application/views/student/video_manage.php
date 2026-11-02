@@ -690,7 +690,9 @@ display: inline-block;
 
 /* centre everything: banner text, units, chapters and video cards */
 .vl-head { text-align: center; }
-#subject-section .pcontainer { grid-template-columns: repeat(auto-fit, minmax(220px, 260px)); justify-content: center; }
+/* flex so every row, the last one too, sits in the middle */
+#subject-section .pcontainer { display: flex !important; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 100%; margin: 0 auto; }
+#subject-section .pcontainer > a { flex: 0 1 240px; display: block; }
 #topics-section .list-container ul { grid-template-columns: repeat(auto-fit, minmax(260px, 320px)); justify-content: center; }
 #titles-section .card-container { grid-template-columns: repeat(auto-fit, minmax(420px, 600px)); justify-content: center; gap: 32px; }
 /* bigger video cards: thumbnail fills the card, larger title */
@@ -705,6 +707,7 @@ display: inline-block;
     .vl-head { padding: 20px; }
     .vl-head h2 { font-size: 23px; }
     #subject-section .pcontainer, #titles-section .card-container { grid-template-columns: 1fr 1fr; gap: 14px; }
+    #subject-section .pcontainer > a { flex-basis: calc(50% - 7px); }
     #subject-section .grid-item .image { height: 96px; }
     #subject-section .grid-item .content { padding: 12px; }
     #subject-section .grid-item .content h5 { font-size: 15px; }
