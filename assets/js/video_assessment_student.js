@@ -687,7 +687,7 @@
         var go = function () {
             var canvas = drawShareCard();
             state.shareImage = canvas.toDataURL('image/png');
-            canvas.toBlob(function (blob) { state.shareBlob = blob; });
+            state.shareBlob = dataUrlToBlob(state.shareImage);
             $card.find('.vas-score').hide();
             $card.find('.vas-share').remove();
             $card.append(
@@ -709,15 +709,22 @@
         };
         if (document.fonts && document.fonts.ready) { document.fonts.ready.then(go); } else { go(); }
     }
+    function dataUrlToBlob(url) {
+        var parts = url.split(','), bin = atob(parts[1]), arr = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) { arr[i] = bin.charCodeAt(i); }
+        return new Blob([arr], { type: 'image/png' });
+    }
+    /** Share the picture itself through the phone's share menu. Returns false when the browser can't share files. */
+    function shareImageFile() {
+        if (!navigator.share || !navigator.canShare || !state.shareBlob || !window.File) { return false; }
+        var file = new File([state.shareBlob], 'my-quiz-score.png', { type: 'image/png' });
+        if (!navigator.canShare({ files: [file] })) { return false; }
+        navigator.share({ files: [file], text: shareText() }).catch(function () {});
+        return true;
+    }
     function nativeShare(onFail) {
-        var text = shareText();
-        if (navigator.share && state.shareBlob && window.File) {
-            var file = new File([state.shareBlob], 'my-quiz-score.png', { type: 'image/png' });
-            if (!navigator.canShare || navigator.canShare({ files: [file] })) {
-                return navigator.share({ files: [file], text: text, title: 'My quiz score' }).catch(function () {});
-            }
-        }
-        if (navigator.share) { return navigator.share({ text: text, url: siteUrl(), title: 'My quiz score' }).catch(function () {}); }
+        if (shareImageFile()) { return; }
+        if (navigator.share) { return navigator.share({ text: shareText(), url: siteUrl(), title: 'My quiz score' }).catch(function () {}); }
         onFail();
     }
     $(document).on('click', '[data-vas="share"]', function () { if (state && state.last) { openShare(); } });
@@ -732,8 +739,15 @@
         if (kind === 'native') {
             nativeShare(function () { downloadCard(); shareStatus('Image saved. Post it on any app you like!'); });
         } else if (kind === 'whatsapp') {
+            // A WhatsApp link can only carry text, so send the picture through the share menu (pick WhatsApp there).
+            if (shareImageFile()) { shareStatus('Choose WhatsApp to send your score card.'); return; }
+            downloadCard();
+            shareStatus('Image saved! In WhatsApp tap 📎 and attach "my-quiz-score.png".');
             window.open('https://wa.me/?text=' + encodeURIComponent(text + ' ' + url), '_blank');
         } else if (kind === 'facebook') {
+            if (shareImageFile()) { shareStatus('Choose Facebook to post your score card.'); return; }
+            downloadCard();
+            shareStatus('Image saved! Add "my-quiz-score.png" to your Facebook post.');
             window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url) + '&quote=' + encodeURIComponent(text), '_blank');
         } else if (kind === 'instagram') {
             // Instagram has no web share link: use the phone's share sheet, or save the image to post it.
