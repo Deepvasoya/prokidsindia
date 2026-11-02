@@ -60,7 +60,7 @@
     background: #22c58b; color: #fff; font-size: 12px; font-weight: 800; box-shadow: 0 4px 10px rgba(34,197,139,.35);
 }
 .mc-body { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 14px; flex: 1; }
-.mc-title { font-family: var(--pk-font-head, inherit); font-size: 21px; font-weight: 600; line-height: 1.25; margin: 0; color: #1f2a4d; }
+.mc-title { font-family: var(--pk-font-head, inherit); font-size: 21px; font-weight: 600; line-height: 1.25; margin: 0; color: #1f2a4d; text-align: center; }
 .mc-cta {
     margin-top: auto; display: flex; align-items: center; justify-content: space-between;
     padding: 11px 16px; border-radius: 14px; background: var(--soft); color: var(--c); font-weight: 800; font-size: 15px;
