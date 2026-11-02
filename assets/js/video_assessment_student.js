@@ -771,13 +771,11 @@
             return saveAndOpen();
         }
         if (!app.paste) { return saveAndOpen(); }
-        // open the app window right away (inside the click) so pop-up blockers allow it
-        var win = window.open(app.webLink(full, url), '_blank');
-        copyImage(function () { shareStatus(app.paste); }, function () {
-            downloadCard();
-            shareStatus('Picture saved as "my-quiz-score.png". Attach it in ' + app.name + ' (📎).');
-            if (!win) { openApp(app.webLink(full, url)); }
-        });
+        // copy first (the page must still have focus), then open the app in a new tab
+        copyImage(function () {
+            shareStatus(app.paste);
+            openApp(app.webLink(full, url));
+        }, saveAndOpen);
     }
 
     $(document).on('click', '[data-vas="share"]', function () { if (state && state.last) { openShare(); } });
