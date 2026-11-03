@@ -747,11 +747,8 @@
                     '<img class="vas-share-img" src="' + state.shareImage + '" alt="My quiz score card">' +
                     '<div class="vas-share-grid">' +
                         '<button type="button" class="vas-share-btn is-native" data-vas-share="native">&#128228; Share</button>' +
-                        '<button type="button" class="vas-share-btn is-wa" data-vas-share="whatsapp">WhatsApp</button>' +
-                        '<button type="button" class="vas-share-btn is-ig" data-vas-share="instagram">Instagram</button>' +
-                        '<button type="button" class="vas-share-btn is-fb" data-vas-share="facebook">Facebook</button>' +
-                        '<button type="button" class="vas-share-btn" data-vas-share="download">&#11015; Save image</button>' +
-                        '<button type="button" class="vas-share-btn" data-vas-share="copy">&#128203; Copy text</button>' +
+                        '<button type="button" class="vas-share-btn" data-vas-share="copy-image">&#128203; Copy</button>' +
+                        '<button type="button" class="vas-share-btn" data-vas-share="download">&#11015; Download</button>' +
                     '</div>' +
                     '<p class="vas-share-msg" data-vas-share-msg></p>' +
                     '<div class="vas-share-steps" data-vas-share-steps></div>' +
@@ -874,6 +871,9 @@
             copyImage(function () { shareStatus('Picture copied! Paste it (Ctrl+V) in any chat or post.'); }, saved);
         } else if (apps[kind]) {
             shareTo(kind);
+        } else if (kind === 'copy-image') {
+            copyImage(function () { shareStatus('Picture copied! Paste it (Ctrl+V) in any chat or post.'); },
+                      function () { downloadCard(); shareStatus('Copying is not allowed here, so the picture was downloaded.'); });
         } else if (kind === 'download') {
             downloadCard(); shareStatus('Picture saved!');
         } else if (kind === 'copy') {
