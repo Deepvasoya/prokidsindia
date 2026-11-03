@@ -2013,3 +2013,15 @@ body.student-panel #view_video_popup .number-section #videoGrid { order: 3; }
     body.student-panel #view_video_popup .videoIframeShow iframe { max-height: calc(100dvh - 140px) !important; }
     body.student-panel #view_video_popup .video-section .videoIframeShow { width: 92%; }
 }
+
+/* YouTube (Plyr) player: its height comes from its width (16:9), so cap the width
+   by the free height — the whole player incl. the control bar always fits */
+@media (min-width: 901px) {
+    body.student-panel #view_video_popup .video-section .videoIframeShow {
+        width: min(100%, calc((100dvh - 96px) * 16 / 9)) !important; max-height: none;
+    }
+    body.student-panel #view_video_popup .videoIframeShow #player,
+    body.student-panel #view_video_popup .videoIframeShow .plyr,
+    body.student-panel #view_video_popup .videoIframeShow .plyr__video-embed { width: 100% !important; max-height: none !important; }
+    body.student-panel #view_video_popup .videoIframeShow .plyr iframe { max-height: none !important; height: 100% !important; }
+}
