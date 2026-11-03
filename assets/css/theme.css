@@ -1961,7 +1961,7 @@ body.student-panel #view_video_popup .video-content { gap: 14px; align-items: st
 body.student-panel #view_video_popup .video-section {
     display: flex !important; align-items: center; justify-content: center;
     padding: 14px !important; border-radius: 20px;
-    background: #f7f8fe; border: 1px solid #eceefa;
+    background: transparent; border: 0;
 }
 body.student-panel #view_video_popup .video-section .videoIframeShow { margin: 0 auto; background: transparent; }
 body.student-panel #view_video_popup .video-section .videoIframeShow video,
