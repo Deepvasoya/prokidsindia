@@ -868,11 +868,11 @@
         if (kind === 'native') {
             if (shareImageFile(saved, true)) { return; }
             if (isPhone && navigator.share) { navigator.share({ text: text, url: url }).catch(function () {}); return; }
-            copyImage(function () { shareStatus('Picture copied! Paste it (Ctrl+V) in any chat or post.'); }, saved);
+            copyImage(function () { shareStatus(''); }, saved);
         } else if (apps[kind]) {
             shareTo(kind);
         } else if (kind === 'copy-image') {
-            copyImage(function () { shareStatus('Picture copied! Paste it (Ctrl+V) in any chat or post.'); },
+            copyImage(function () { shareStatus(''); },
                       function () { downloadCard(); shareStatus('Copying is not allowed here, so the picture was downloaded.'); });
         } else if (kind === 'download') {
             downloadCard(); shareStatus('Picture saved!');
