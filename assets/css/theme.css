@@ -2003,3 +2003,13 @@ body.student-panel #view_video_popup .videoIframeShow iframe { background: trans
     body.student-panel #view_video_popup #videoGrid.number-grid { flex: 1 1 auto; min-height: 0; max-height: none !important; }
     body.student-panel #view_video_popup .number-section .vas-panel-side { flex: 0 0 auto; margin-top: 10px; }
 }
+
+/* Quiz button at the top of the side panel (under the video title), smaller video */
+body.student-panel #view_video_popup .number-section .number-title { order: 1; }
+body.student-panel #view_video_popup .number-section .vas-panel-side { order: 2; margin: 0 0 12px !important; }
+body.student-panel #view_video_popup .number-section #videoGrid { order: 3; }
+@media (min-width: 901px) {
+    body.student-panel #view_video_popup .videoIframeShow video,
+    body.student-panel #view_video_popup .videoIframeShow iframe { max-height: calc(100dvh - 140px) !important; }
+    body.student-panel #view_video_popup .video-section .videoIframeShow { width: 92%; }
+}
