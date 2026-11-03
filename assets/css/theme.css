@@ -2041,3 +2041,7 @@ body.student-panel #view_video_popup .number-section .vas-panel-side { order: 3;
     }
 }
 body.student-panel #view_video_popup .number-section .vas-panel-side { margin-top: 22px !important; }
+/* keep the side panel clear of the popup's close (×) button */
+@media (min-width: 901px) {
+    body.student-panel #view_video_popup .number-section { margin-right: 46px !important; }
+}
