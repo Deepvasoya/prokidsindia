@@ -1977,3 +1977,29 @@ body.student-panel #view_video_popup .videoIframeShow video {
     max-height: calc(100vh - 150px); object-fit: contain; background: transparent !important;
 }
 body.student-panel #view_video_popup .videoIframeShow iframe { background: transparent !important; }
+
+/* Student video popup = full screen, no scrolling: the video shrinks to fit the
+   height, and the numbers panel (with the Quiz button) always stays visible */
+@media (min-width: 901px) {
+    body.student-panel .mfp-wrap:has(#view_video_popup) .mfp-container { padding: 0 !important; }
+    body.student-panel .mfp-wrap:has(#view_video_popup) { overflow: hidden !important; }
+    body.student-panel #view_video_popup.edu_popup_container {
+        width: calc(100vw - 24px) !important; max-width: none !important;
+        height: calc(100dvh - 24px) !important; margin: 12px auto !important;
+        padding: 16px 18px !important; overflow: hidden !important; box-sizing: border-box;
+    }
+    body.student-panel #view_video_popup .edu_popup_wrapper,
+    body.student-panel #view_video_popup .edu_popup_inner { height: 100%; overflow: hidden; padding: 0 !important; }
+    body.student-panel #view_video_popup .video-content { height: 100%; align-items: stretch; gap: 12px; }
+    body.student-panel #view_video_popup .video-section { height: 100%; min-height: 0; padding: 10px !important; overflow: hidden; }
+    body.student-panel #view_video_popup .video-section .videoIframeShow { width: 100%; max-height: 100%; }
+    body.student-panel #view_video_popup .videoIframeShow video,
+    body.student-panel #view_video_popup .videoIframeShow iframe { max-height: calc(100dvh - 76px) !important; }
+    body.student-panel #view_video_popup .number-section {
+        height: 100%; min-height: 0; display: flex; flex-direction: column; overflow: hidden;
+        padding: 12px !important; margin-right: 26px;
+    }
+    body.student-panel #view_video_popup .number-title { flex: 0 0 auto; margin: 0 0 10px !important; }
+    body.student-panel #view_video_popup #videoGrid.number-grid { flex: 1 1 auto; min-height: 0; max-height: none !important; }
+    body.student-panel #view_video_popup .number-section .vas-panel-side { flex: 0 0 auto; margin-top: 10px; }
+}
