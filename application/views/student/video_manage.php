@@ -1278,8 +1278,8 @@ if (videoType === 'youtube') {
 
 }
 
-// Update popup content
-$('#view_video_popup .videoIframeShow').html(html);
+// Update popup content (forget the previous video's shape)
+$('#view_video_popup .videoIframeShow').css('--vr', '').html(html);
 $('#viewVideoTopic').text(videoTitle);
 $('#videox_id').val(videoId);
 
