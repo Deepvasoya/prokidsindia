@@ -2025,3 +2025,7 @@ body.student-panel #view_video_popup .number-section #videoGrid { order: 3; }
     body.student-panel #view_video_popup .videoIframeShow .plyr__video-embed { width: 100% !important; max-height: none !important; }
     body.student-panel #view_video_popup .videoIframeShow .plyr iframe { max-height: none !important; height: 100% !important; }
 }
+
+/* Quiz box right after the last number button */
+body.student-panel #view_video_popup .number-section #videoGrid { order: 2; flex: 0 1 auto !important; }
+body.student-panel #view_video_popup .number-section .vas-panel-side { order: 3; margin: 12px 0 0 !important; }
