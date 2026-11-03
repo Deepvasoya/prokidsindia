@@ -1238,6 +1238,13 @@ function decryptData(encryptedData, key) {
 
 
 //$(document).on('click', '#titles-container li', function() {
+// Size the player to the video's real shape (4:3, 16:9...) so its controls match the picture.
+document.addEventListener('loadedmetadata', function (e) {
+    var v = e.target;
+    if (v.tagName !== 'VIDEO' || !v.videoWidth || !v.closest) { return; }
+    var box = v.closest('#view_video_popup .videoIframeShow');
+    if (box) { box.style.setProperty('--vr', (v.videoWidth / v.videoHeight).toFixed(4)); }
+}, true);
 $(document).on('click', '.video-card', function() {
 const src = parseVideo($(this).attr('data-url'), $(this).attr('data-type'));
 

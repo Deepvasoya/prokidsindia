@@ -2029,3 +2029,14 @@ body.student-panel #view_video_popup .number-section #videoGrid { order: 3; }
 /* Quiz box right after the last number button */
 body.student-panel #view_video_popup .number-section #videoGrid { order: 2; flex: 0 1 auto !important; }
 body.student-panel #view_video_popup .number-section .vas-panel-side { order: 3; margin: 12px 0 0 !important; }
+
+/* Player box = the video's real shape (--vr is set from the video file when it loads),
+   so the control bar is exactly as wide as the picture; height still fits the screen */
+@media (min-width: 901px) {
+    body.student-panel #view_video_popup .video-section .videoIframeShow {
+        width: min(100%, calc((100dvh - 140px) * var(--vr, 1.7778))) !important;
+    }
+    body.student-panel #view_video_popup .videoIframeShow video {
+        width: 100% !important; height: auto !important; max-height: none !important;
+    }
+}
