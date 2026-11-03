@@ -2040,3 +2040,4 @@ body.student-panel #view_video_popup .number-section .vas-panel-side { order: 3;
         width: 100% !important; height: auto !important; max-height: none !important;
     }
 }
+body.student-panel #view_video_popup .number-section .vas-panel-side { margin-top: 22px !important; }
